@@ -85,8 +85,25 @@ const refreshToken = async (req, res) => {
         })
     }
 }
+
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await userService.getAllUsersService();
+        return res.status(200).json({
+            status: 'Success',
+            data: users
+        });
+    } catch (e) {
+        return res.status(404).json({
+            status: 'Err',
+            message: e.message
+        });
+    }
+}
+
 module.exports = {
     createUser,
     LoginUser,
-    refreshToken
+    refreshToken,
+    getAllUsers
 };
