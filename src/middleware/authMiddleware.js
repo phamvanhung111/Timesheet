@@ -3,7 +3,7 @@ const dotenv = require('dotenv')
 dotenv.config()
 
 
-const authMiddleware = (req, res, next) = () => {
+const authMiddleware = (req, res, next) => {
     const token = req.header.token.split(' ')[1]
     jwt.verify(token, access_token, function (err, user) {
         if (err) {
@@ -23,7 +23,7 @@ const authMiddleware = (req, res, next) = () => {
     });
 }
 
-const authUserMiddleware = (req, res, next) = () => {
+const authUserMiddleware = (req, res, next) => {
     const token = req.header.token.split(' ')[1]
     const userId = req.params.id
     jwt.verify(token, access_token, function (err, user) {
