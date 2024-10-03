@@ -11,7 +11,7 @@ const ProjectUser = require('./projectUser');
 
 const syncDatabase = async () => {
     try {
-        await sequelize.sync({ force: true }); // Đặt `force: true` để xóa và tạo lại bảng
+        // await sequelize.sync({ force: true });
         console.log('Đã tạo tất cả các bảng thành công!');
     } catch (error) {
         console.error('Lỗi khi tạo bảng:', error);

@@ -35,7 +35,6 @@ Users.init({
     },
     Bank: {
         type: DataTypes.STRING,
-        unique: true
     },
     BankAccount: {
         type: DataTypes.STRING
@@ -56,6 +55,9 @@ Users.init({
         type: DataTypes.STRING
     },
     PhoneNumber: {
+        type: DataTypes.STRING
+    },
+    Positon: {
         type: DataTypes.STRING
     },
     Status: {

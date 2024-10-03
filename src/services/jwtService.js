@@ -1,48 +1,85 @@
 const jwt = require('jsonwebtoken');
-const dotenv = require('dotenv')
-dotenv.config()
+const dotenv = require('dotenv');
+const Users = require('../models/users'); // Đảm bảo đường dẫn đúng
+const Account = require('../models/account');
+
+dotenv.config();
 
 const accessToken = async (payload) => {
-    const access_token = jwt.sign({
-        ...payload
-    }, process.env.ACCESS_TOKEN, { expiresIn: '30s' })
-
-    return access_token;
+    console.log('payload: ', payload);
+    try {
+        const access_token = jwt.sign(
+            {
+                id: payload.id,
+                email: payload.email,
+                role: payload.role
+            },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '30s' } // Đặt thời gian hết hạn token
+        );
+        return access_token;
+    } catch (error) {
+        console.error('Error creating access token:', error);
+    }
 }
+
 
 const refreshToken = async (payload) => {
-    const refresh_token = jwt.sign({
-        ...payload
-    }, process.env.REFRESH_TOKEN, { expiresIn: '365d' })
-
-    return refresh_token;
+    try {
+        const refresh_token = jwt.sign(
+            {
+                id: payload.id,
+                email: payload.email,
+                role: payload.role
+            },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: '365d' } // Token sẽ có thời hạn 365 ngày
+        );
+        return refresh_token;
+    } catch (error) {
+        console.error('Error creating refresh token:', error);
+    }
 }
-const refreshTokenJwtService = (token) => {
+
+
+
+const refreshTokenJwtService = async (token) => {
     return new Promise((resolve, reject) => {
         try {
-            jwt.verify(token, process.env.REFRESH_TOKEN, async (err, user) => {
+            jwt.verify(token, process.env.REFRESH_TOKEN_SECRET, async (err, account) => {
                 if (err) {
-                    resolve({
+                    return resolve({
                         status: 'ERR',
-                        message: 'The authemtication'
-                    })
+                        message: 'Token không hợp lệ hoặc đã hết hạn'
+                    });
                 }
-                const access_token = await genneralAccessToken({
-                    id: user?.id,
-                    isAdmin: user?.isAdmin
-                })
+
+                // Tìm người dùng trong cơ sở dữ liệu
+                const existingAccount = await Account.findOne({ where: { Id: account.id } });
+                if (!existingAccount) {
+                    return resolve({
+                        status: 'ERR',
+                        message: 'Người dùng không tồn tại'
+                    });
+                }
+                const existingUser = await Users.findOne({ where: { Email: existingAccount.UserName } });
+                const access_token = await accessToken({
+                    id: existingUser.Id,
+                    isAdmin: existingUser.Role === 1
+                });
+
                 resolve({
                     status: 'OK',
-                    message: 'SUCESS',
+                    message: 'Cấp lại token thành công',
                     access_token
-                })
-            })
+                });
+            });
         } catch (e) {
-            reject(e)
+            reject(e);
         }
-    })
-
+    });
 }
+
 module.exports = {
     refreshToken,
     accessToken,
