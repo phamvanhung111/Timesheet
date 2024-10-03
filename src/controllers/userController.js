@@ -2,10 +2,10 @@ const userService = require('../services/userSevice')
 
 const createUser = async (req, res) => {
     try {
-        const { email, password, confirmPassword } = req.body;
+        const { FullName, email, password, confirmPassword } = req.body;
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
         const checkEmail = reg.test(email)
-        if (!email || !password || !confirmPassword) {
+        if (!FullName || !email || !password || !confirmPassword) {
             return res.status(200).json({
                 status: "Err",
                 message: "The input is required "
@@ -36,16 +36,16 @@ const createUser = async (req, res) => {
 
 const LoginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { username, password } = req.body;
         const reg = /^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/
-        const checkEmail = reg.test(email)
-        if (!email || !password) {
+        const checkUser = reg.test(username)
+        if (!username || !password) {
             return res.status(200).json({
                 status: "Err",
                 message: "The input is required "
             })
         }
-        else if (!checkEmail) {
+        else if (!checkUser) {
             return res.status(200).json({
                 status: "Err",
                 message: "The input is email"
