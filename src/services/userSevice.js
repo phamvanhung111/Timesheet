@@ -1,5 +1,6 @@
 const Users = require('../models/users');
 const Accounts = require('../models/account')
+const Roles = require('../models/roles')
 const bcrypt = require('bcrypt');
 const { refreshToken, accessToken } = require('./jwtService');
 
@@ -109,7 +110,7 @@ const getAllUsersService = async () => {
 
 const gettAllRoleService = async () => {
     try {
-        const roleUsers = await Users.findAll();
+        const roleUsers = await Roles.findAll();
         return roleUsers;
 
     } catch (error) {
