@@ -100,10 +100,43 @@ const getAllUsers = async (req, res) => {
         });
     }
 }
+const getAllRoles = async (req, res) => {
+    try {
+        const roleUser = await userService.gettAllRoleService();
+        return res.status(200).json({
+            status: 'Success',
+            data: roleUser
+        });
+    } catch (e) {
+        return res.status(404).json({
+            status: 'Err',
+            message: e.message
+        });
+    }
+}
+const getUserInfo = async (req, res) => {
+    try {
+        const Id = req.params.Id;
+        const account_id = req.account_id
+        const userInfo = await userService.getUserInfoById(Id, account_id);
+
+        return res.status(200).json({
+            status: 'Success',
+            data: userInfo
+        });
+    } catch (error) {
+        return res.status(404).json({
+            status: 'Err',
+            message: error.message
+        });
+    }
+};
 
 module.exports = {
     createUser,
     LoginUser,
     refreshToken,
-    getAllUsers
+    getAllUsers,
+    getAllRoles,
+    getUserInfo
 };

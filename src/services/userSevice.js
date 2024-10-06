@@ -26,18 +26,13 @@ const createUserService = async (data) => {
         if (userExists) {
             return { status: 'Err', message: 'Email is already registered' };
         }
-        console.log(userExists);
 
-        // Mã hóa mật khẩu
         const hashedPassword = await bcrypt.hash(password, 10);
         const newAccount = await Accounts.create({
             UserName: email,
             Password: hashedPassword,
         });
-        console.log(newAccount)
         const roleInt = parseInt(Role, 10);
-        console.log('Tuân')
-        // Tạo user mới với tất cả các trường
         const newUser = await Users.create({
             FullName: FullName,
             Email: email,
@@ -54,7 +49,6 @@ const createUserService = async (data) => {
             Created: new Date(),
             Status: true // Đang hoạt động
         });
-        console.log(newUser);
 
         if (newUser) {
             return {
@@ -77,19 +71,16 @@ const loginUserService = async (data) => {
         // Kiểm tra xem email có tồn tại trong hệ thống hay không
         const account = await Accounts.findOne({ where: { UserName: username } });
 
-        console.log(account)
         if (!account) {
             return { status: 'Err', message: 'Email or password is incorrect' };
         }
 
         // So sánh mật khẩu
         const isPasswordValid = await bcrypt.compare(password, account.Password);
-        console.log(isPasswordValid)
         if (!isPasswordValid) {
             return { status: 'Err', message: 'Email or password is incorrect' };
         }
         const user = await Users.findOne({ where: { Account: account.Id } })
-        console.log("Tuan")
         const access_token = await accessToken({
             id: account.Id,
             email: account.UserName,
@@ -116,8 +107,43 @@ const getAllUsersService = async () => {
     }
 };
 
+const gettAllRoleService = async () => {
+    try {
+        const roleUsers = await Users.findAll();
+        return roleUsers;
+
+    } catch (error) {
+        console.log(error)
+        throw new Error(error.message);
+    }
+}
+const getUserInfoById = async (Id, account_id) => {
+    try {
+        const userAccount = await Users.findOne({ where: { Account: account_id } });
+        console.log("useracconut", typeof userAccount.Id)
+        const intId = parseInt(Id, 10)
+        console.log('id', typeof intId)
+        if (userAccount.Id === intId) {
+            const user = await Users.findOne({ where: { Id: intId } });
+            console.log("user", user)
+            if (!user) {
+                throw new Error('User not found');
+            }
+            return user;
+        }
+        else {
+            return { message: 'Day k phai tk cua b' }
+        }
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+
 module.exports = {
     createUserService,
     loginUserService,
-    getAllUsersService
+    getAllUsersService,
+    gettAllRoleService,
+    getUserInfoById
 };
