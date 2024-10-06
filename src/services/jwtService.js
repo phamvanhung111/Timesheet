@@ -15,7 +15,7 @@ const accessToken = async (payload) => {
                 role: payload.role
             },
             process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '30s' } // Đặt thời gian hết hạn token
+            { expiresIn: '1d' } // Đặt thời gian hết hạn token
         );
         return access_token;
     } catch (error) {
@@ -55,7 +55,7 @@ const refreshTokenJwtService = async (token) => {
                 }
 
                 // Tìm người dùng trong cơ sở dữ liệu
-                const existingAccount = await Account.findOne({ where: { Id: account.id } });
+                const existingAccount = await Account.findOne({ where: { Id: account.Id } });
                 if (!existingAccount) {
                     return resolve({
                         status: 'ERR',
