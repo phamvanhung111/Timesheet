@@ -1,6 +1,6 @@
 const Projects = require('../models/projects')
 
-const createUserService = async (data) => {
+const createProjectService = async (data) => {
     try {
         const {
             email,
@@ -63,3 +63,7 @@ const createUserService = async (data) => {
         return { status: "Err", message: e.message };
     }
 };
+
+module.exports = {
+    createProjectService
+}
