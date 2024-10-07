@@ -1,4 +1,4 @@
-const userService = require('../services/userSevice')
+const userService = require('../services/userSevice');
 
 const createUser = async (req, res) => {
     try {
@@ -132,11 +132,38 @@ const getUserInfo = async (req, res) => {
     }
 };
 
+const updateUser = async (req, res) => {
+    try {
+        const Id = req.params.Id;
+        const account_id = req.account_id
+        const data = req.body;
+        console.log('data', data)
+        if (!Id) {
+            return res.status(200).json({
+                status: "Err",
+                message: "The userId is require"
+            })
+        }
+        const userUpdate = await userService.updateUserById(Id, data, account_id);
+
+        return res.status(200).json({
+            status: 'Success',
+            data: userUpdate
+        });
+    } catch (error) {
+        return res.status(404).json({
+            status: 'Err',
+            message: error.message
+        });
+    }
+}
+
 module.exports = {
     createUser,
     LoginUser,
     refreshToken,
     getAllUsers,
     getAllRoles,
-    getUserInfo
+    getUserInfo,
+    updateUser
 };

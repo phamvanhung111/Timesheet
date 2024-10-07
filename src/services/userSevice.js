@@ -20,9 +20,7 @@ const createUserService = async (data) => {
             Sex,
             PhoneNumber
         } = data;
-        console.log(data);
 
-        // Kiểm tra email đã tồn tại hay chưa
         const userExists = await Accounts.findOne({ where: { UserName: email } });
         if (userExists) {
             return { status: 'Err', message: 'Email is already registered' };
@@ -121,9 +119,7 @@ const gettAllRoleService = async () => {
 const getUserInfoById = async (Id, account_id) => {
     try {
         const userAccount = await Users.findOne({ where: { Account: account_id } });
-        console.log("useracconut", typeof userAccount.Id)
         const intId = parseInt(Id, 10)
-        console.log('id', typeof intId)
         if (userAccount.Id === intId) {
             const user = await Users.findOne({ where: { Id: intId } });
             console.log("user", user)
@@ -139,6 +135,58 @@ const getUserInfoById = async (Id, account_id) => {
         throw new Error(error.message);
     }
 };
+const updateUserById = async (Id, data, account_id) => {
+    try {
+        const userAccount = await Users.findOne({ where: { Account: account_id } });
+        const intId = parseInt(Id, 10)
+        if (userAccount.Id === intId) {
+            const userId = await Users.findOne({ where: { Id: Id } });
+            if (userId === null) {
+                return { status: 'Err', message: 'User not define' };
+            }
+            const {
+                FullName,
+                Age,
+                Role,
+                Bank,
+                BankAccount,
+                Address,
+                Indentify,
+                Salary,
+                Sex,
+                PhoneNumber
+            } = data;
+            const updateUser = await Users.update({
+                FullName: FullName,
+                Age,
+                Role,
+                Bank,
+                BankAccount,
+                Address,
+                Indentify,
+                Salary,
+                Sex,
+                PhoneNumber
+            }, {
+                where: { Id: Id }
+            });
+            if (updateUser) {
+                return {
+                    status: "Success",
+                    message: "Update thành công",
+                };
+            }
+        }
+        else {
+            return { message: 'Day k phai tk cua b' }
+        }
+
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+
 
 
 module.exports = {
@@ -146,5 +194,6 @@ module.exports = {
     loginUserService,
     getAllUsersService,
     gettAllRoleService,
-    getUserInfoById
+    getUserInfoById,
+    updateUserById
 };
