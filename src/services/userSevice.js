@@ -135,6 +135,25 @@ const getUserInfoById = async (Id, account_id) => {
         throw new Error(error.message);
     }
 };
+
+
+const getUserInfoByEmailService = async (email) => {
+    try {
+        const userEmail = await Users.findOne({
+            where: {
+                Email: email
+            }
+        })
+        if (!userEmail) {
+            throw new Error('User not found');
+        }
+        return userEmail
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+
 const updateUserById = async (Id, data, account_id) => {
     try {
         const userAccount = await Users.findOne({ where: { Account: account_id } });
@@ -195,5 +214,6 @@ module.exports = {
     getAllUsersService,
     gettAllRoleService,
     getUserInfoById,
-    updateUserById
+    updateUserById,
+    getUserInfoByEmailService
 };

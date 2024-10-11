@@ -12,10 +12,12 @@ const ProjectUser = require('./projectUser');
 const syncDatabase = async () => {
     try {
         // await sequelize.sync({ force: true });
-        console.log('Đã tạo tất cả các bảng thành công!');
+        // await sequelize.sync({ alter: true });
+        console.log('Đã cập nhật cấu trúc bảng thành công!');
     } catch (error) {
-        console.error('Lỗi khi tạo bảng:', error);
+        console.error('Lỗi khi cập nhật bảng:', error);
     }
 };
+
 
 syncDatabase();

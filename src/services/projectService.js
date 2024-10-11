@@ -1,61 +1,36 @@
 const Projects = require('../models/projects')
-
-const createProjectService = async (data) => {
+const Users = require('../models/users')
+const ProjectUser = require('../models/projectUser')
+const createProjectService = async (createProject) => {
     try {
         const {
-            email,
-            password,
-            FullName,
-            Age,
+            ProjectName,
+            ClientName,
+            Description,
             Role,
-            Bank,
-            BankAccount,
-            Address,
-            Indentify,
-            Salary,
-            Sex,
-            PhoneNumber
-        } = data;
-        console.log(data);
-
-        // Kiểm tra email đã tồn tại hay chưa
-        const userExists = await Projects.findOne({ where: { UserName: email } });
-        if (userExists) {
-            return { status: 'Err', message: 'Email is already registered' };
+            UserId
+        } = createProject;
+        console.log(createProject);
+        intRole = parseInt(Role, 10);
+        intUserId = parseInt(UserId, 10);
+        if (intRole !== 1) {
+            throw new Error('Err');
         }
-        console.log(userExists);
 
-        // Mã hóa mật khẩu
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newAccount = await Accounts.create({
-            UserName: email,
-            Password: hashedPassword,
-        });
-        console.log(newAccount)
-        const roleInt = parseInt(Role, 10);
-        // Tạo user mới với tất cả các trường
-        const newUser = await Users.create({
-            FullName: FullName,
-            Email: email,
-            Age: Age,
-            Role: roleInt,
-            Account: newAccount.Id,
-            Bank: Bank,
-            BankAccount: BankAccount,
-            Address: Address,
-            Indentify: Indentify,
-            Salary: Salary,
-            Sex: Sex,
-            PhoneNumber: PhoneNumber,
+        const newProject = await Projects.create({
+            ProjectName,
+            ClientName,
+            Description,
+            PM: intUserId,
             Created: new Date(),
-            Status: true // Đang hoạt động
+            Status: true
         });
 
-        if (newUser) {
+        if (newProject) {
             return {
                 status: "Success",
                 message: "Tạo thành công",
-                data: newUser
+                data: newProject
             };
         }
     } catch (e) {
@@ -64,6 +39,122 @@ const createProjectService = async (data) => {
     }
 };
 
+const getAllProjectService = async () => {
+    try {
+        const getProjectInfoById = await Projects.findAll()
+        if (getProjectInfoById === null) {
+            throw new Error('Project not found');
+        }
+        return getProjectInfoById;
+    } catch (error) {
+
+    }
+}
+
+const addUsersToProjectService = async (userIds, projectId) => {
+    try {
+        const project = await Projects.findOne({
+            where: { Id: projectId }
+        });
+        if (!project) {
+            throw new Error('Project not found.');
+        }
+        const promises = userIds.map(async (userId) => {
+            const existingRecord = await ProjectUser.findOne({
+                where: { UserId: userId, ProjectId: projectId }
+            });
+            if (!existingRecord) {
+
+                await ProjectUser.create({ UserId: userId, ProjectId: projectId });
+
+
+                project.QuantityMember = (project.QuantityMember || 0) + 1;
+            } else {
+                throw new Error('User da ton tai')
+            }
+        });
+
+        await Promise.all(promises);
+
+        await project.save();
+
+        return { success: true, message: 'Users added to project successfully.' };
+    } catch (error) {
+        console.error(error);
+        return { success: false, message: error.message };
+    }
+};
+const removeUsersFromProjectService = async (userIds, projectId) => {
+    try {
+        const project = await Projects.findOne({
+            where: { Id: projectId }
+        });
+        if (!project) {
+            throw new Error('Project not found.');
+        }
+
+        const promises = userIds.map(async (userId) => {
+            const existingRecord = await ProjectUser.findOne({
+                where: { UserId: userId, ProjectId: projectId }
+            });
+            if (existingRecord) {
+                await ProjectUser.destroy({
+                    where: { UserId: userId, ProjectId: projectId }
+                });
+
+                project.QuantityMember = (project.QuantityMember || 0) - 1;
+            } else {
+                throw new Error('User not found in project.');
+            }
+        });
+
+        await Promise.all(promises);
+
+        await project.save();
+
+        return { success: true, message: 'Users removed from project successfully.' };
+    } catch (error) {
+        console.error(error);
+        return { success: false, message: error.message };
+    }
+};
+const updateProjectById = async (Id, data) => {
+    try {
+        const projectId = await Projects.findOne({ where: { Id: Id } });
+        if (projectId === null) {
+            return { status: 'Err', message: 'Project not define' };
+        }
+        const {
+            ClientName,
+            Description,
+            PM
+        } = data;
+        const updateProject = await Projects.update({
+            ClientName,
+            Description,
+            PM
+        }, {
+            where: { Id: Id }
+        });
+        if (updateProject) {
+            return {
+                status: "Success",
+                message: "Update Project thành công",
+            };
+        }
+
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+
+
+
 module.exports = {
-    createProjectService
+    createProjectService,
+    getAllProjectService,
+    addUsersToProjectService,
+    removeUsersFromProjectService,
+    updateProjectById
 }

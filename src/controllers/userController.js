@@ -132,6 +132,23 @@ const getUserInfo = async (req, res) => {
     }
 };
 
+const getUserInfoByEmail = async (req, res) => {
+    try {
+        const email = req.body.email
+        const emailUser = await userService.getUserInfoByEmailService(email);
+        return res.status(200).json({
+            status: 'Success',
+            data: emailUser
+        });
+    } catch (e) {
+        return res.status(404).json({
+            status: 'Err',
+            message: e.message
+        });
+    }
+}
+
+
 const updateUser = async (req, res) => {
     try {
         const Id = req.params.Id;
@@ -165,5 +182,6 @@ module.exports = {
     getAllUsers,
     getAllRoles,
     getUserInfo,
-    updateUser
+    updateUser,
+    getUserInfoByEmail
 };
