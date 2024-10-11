@@ -11,8 +11,14 @@ Projects.init({
     },
     ProjectName: {
         type: DataTypes.STRING,
+        allowNull: false
+    },
+    ClientName: {
+        type: DataTypes.STRING,
         allowNull: false,
-        unique: true
+    },
+    Description: {
+        type: DataTypes.TEXT
     },
     PM: {
         type: DataTypes.INTEGER,
@@ -20,6 +26,10 @@ Projects.init({
             model: 'Users',
             key: 'Id'
         }
+    },
+    QuantityMember: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
     },
     Created: {
         type: DataTypes.DATE
