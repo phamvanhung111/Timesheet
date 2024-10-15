@@ -29,7 +29,7 @@ Projects.init({
     },
     QuantityMember: {
         type: DataTypes.INTEGER,
-        defaultValue: 1,
+        defaultValue: 0,
     },
     Created: {
         type: DataTypes.DATE

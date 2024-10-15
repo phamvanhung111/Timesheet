@@ -59,23 +59,40 @@ const addUsersToProjectService = async (userIds, projectId) => {
         if (!project) {
             throw new Error('Project not found.');
         }
+
+        // Lấy UserId của người quản lý từ bảng Projects
+        const managerId = project.PM;
+
+        // Kiểm tra nếu người quản lý đã tồn tại trong ProjectUser chưa
+        const existingManagerRecord = await ProjectUser.findOne({
+            where: { UserId: managerId, ProjectId: projectId }
+        });
+
+        // Nếu người quản lý chưa có, thì thêm vào
+        if (!existingManagerRecord) {
+            await ProjectUser.create({ UserId: managerId, ProjectId: projectId });
+            project.QuantityMember = (project.QuantityMember || 0) + 1;
+        }
+
+        // Thêm các thành viên khác, nếu chưa có
         const promises = userIds.map(async (userId) => {
             const existingRecord = await ProjectUser.findOne({
                 where: { UserId: userId, ProjectId: projectId }
             });
+
+            // Nếu chưa có bản ghi trong ProjectUser thì thêm mới
             if (!existingRecord) {
-
                 await ProjectUser.create({ UserId: userId, ProjectId: projectId });
-
-
                 project.QuantityMember = (project.QuantityMember || 0) + 1;
             } else {
-                throw new Error('User da ton tai')
+                throw new Error(`User ID ${userId} đã tồn tại trong dự án`);
             }
         });
 
+        // Chờ tất cả các lời hứa hoàn thành
         await Promise.all(promises);
 
+        // Lưu lại số lượng thành viên vào bảng Projects
         await project.save();
 
         return { success: true, message: 'Users added to project successfully.' };
@@ -84,6 +101,7 @@ const addUsersToProjectService = async (userIds, projectId) => {
         return { success: false, message: error.message };
     }
 };
+
 const removeUsersFromProjectService = async (userIds, projectId) => {
     try {
         const project = await Projects.findOne({

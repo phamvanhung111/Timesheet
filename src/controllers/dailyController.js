@@ -2,8 +2,9 @@ const dailyService = require('../services/dailyService');
 
 const createDaily = async (req, res) => {
     try {
+        const user_id = req.user_id
         const createDaily = req.body;
-        const response = await dailyService.createDailyService(createDaily)
+        const response = await dailyService.createDailyService(createDaily, user_id)
         return res.status(200).json(response)
     }
     catch (e) {
@@ -31,9 +32,26 @@ const getDailyByDateRange = async (req, res) => {
         });
     }
 };
-
+const getDailyByUser = async (req, res) => {
+    const { projectId } = req.params;
+    const user_id = req.user_id;
+    console.log("alo", projectId)
+    try {
+        const dailyRecords = await dailyService.getDailyByUserService(projectId, user_id);
+        return res.status(200).json({
+            status: 'Success',
+            data: dailyRecords
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'Error',
+            message: error.message
+        });
+    }
+};
 module.exports = {
     createDaily,
-    getDailyByDateRange
+    getDailyByDateRange,
+    getDailyByUser
 
 }

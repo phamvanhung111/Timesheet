@@ -80,14 +80,15 @@ const loginUserService = async (data) => {
             return { status: 'Err', message: 'Email or password is incorrect' };
         }
         const user = await Users.findOne({ where: { Account: account.Id } })
+        console.log(user.Id)
         const access_token = await accessToken({
-            id: account.Id,
-            email: account.UserName,
+            id: user.Id,
+            email: user.Email,
             role: user.Role
         });
         const refresh_token = await refreshToken({
-            id: account.Id,
-            email: account.UserName,
+            id: user.Id,
+            email: user.Email,
             role: user.Role
         });
 
@@ -116,9 +117,9 @@ const gettAllRoleService = async () => {
         throw new Error(error.message);
     }
 }
-const getUserInfoById = async (Id, account_id) => {
+const getUserInfoById = async (Id, user_id) => {
     try {
-        const userAccount = await Users.findOne({ where: { Account: account_id } });
+        const userAccount = await Users.findOne({ where: { Account: user_id } });
         const intId = parseInt(Id, 10)
         if (userAccount.Id === intId) {
             const user = await Users.findOne({ where: { Id: intId } });
@@ -154,9 +155,9 @@ const getUserInfoByEmailService = async (email) => {
 };
 
 
-const updateUserById = async (Id, data, account_id) => {
+const updateUserById = async (Id, data, user_id) => {
     try {
-        const userAccount = await Users.findOne({ where: { Account: account_id } });
+        const userAccount = await Users.findOne({ where: { Account: user_id } });
         const intId = parseInt(Id, 10)
         if (userAccount.Id === intId) {
             const userId = await Users.findOne({ where: { Id: Id } });

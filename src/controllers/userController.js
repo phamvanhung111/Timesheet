@@ -117,8 +117,8 @@ const getAllRoles = async (req, res) => {
 const getUserInfo = async (req, res) => {
     try {
         const Id = req.params.Id;
-        const account_id = req.account_id
-        const userInfo = await userService.getUserInfoById(Id, account_id);
+        const user_id = req.user_id
+        const userInfo = await userService.getUserInfoById(Id, user_id);
 
         return res.status(200).json({
             status: 'Success',
@@ -152,7 +152,7 @@ const getUserInfoByEmail = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const Id = req.params.Id;
-        const account_id = req.account_id
+        const user_id = req.user_id
         const data = req.body;
         console.log('data', data)
         if (!Id) {
@@ -161,7 +161,7 @@ const updateUser = async (req, res) => {
                 message: "The userId is require"
             })
         }
-        const userUpdate = await userService.updateUserById(Id, data, account_id);
+        const userUpdate = await userService.updateUserById(Id, data, user_id);
 
         return res.status(200).json({
             status: 'Success',
