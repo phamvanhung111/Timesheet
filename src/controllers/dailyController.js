@@ -21,6 +21,12 @@ const getDailyByDateRange = async (req, res) => {
 
     try {
         const dailyRecords = await dailyService.getDailyByDateRangeService(projectId, day, month, year);
+        if (Array.isArray(dailyRecords) && dailyRecords.length === 0) {
+            return res.status(500).json({
+                status: 'Error',
+                message: error.message
+            });
+        }
         return res.status(200).json({
             status: 'Success',
             data: dailyRecords
@@ -34,13 +40,20 @@ const getDailyByDateRange = async (req, res) => {
 };
 const getDailyByUser = async (req, res) => {
     const { projectId } = req.params;
+    const { day, month, year } = req.query;
     const user_id = req.user_id;
     console.log("alo", projectId)
     try {
-        const dailyRecords = await dailyService.getDailyByUserService(projectId, user_id);
+        const dailyUser = await dailyService.getDailyByUserService(projectId, user_id, day, month, year);
+        if (Array.isArray(dailyUser) && dailyUser.length === 0) {
+            return res.status(500).json({
+                status: 'Error',
+                message: error.message
+            });
+        }
         return res.status(200).json({
             status: 'Success',
-            data: dailyRecords
+            data: dailyUser
         });
     } catch (error) {
         return res.status(500).json({
@@ -49,9 +62,24 @@ const getDailyByUser = async (req, res) => {
         });
     }
 };
+const updateDaily = async (req, res) => {
+    try {
+        const Id = req.params.Id
+        const updateDaily = req.body;
+        const response = await dailyService.updateDailyService(updateDaily, Id)
+        return res.status(200).json(response)
+    }
+    catch (e) {
+        return res.status(404).json({
+            status: "Err",
+            message: e
+        })
+    }
+}
 module.exports = {
     createDaily,
     getDailyByDateRange,
-    getDailyByUser
+    getDailyByUser,
+    updateDaily
 
 }
