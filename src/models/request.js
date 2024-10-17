@@ -46,7 +46,8 @@ Request.init({
         type: DataTypes.DECIMAL(5, 2)
     },
     Status: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        defaultValue: 'Pending'
     }
 }, {
     sequelize,
@@ -54,5 +55,8 @@ Request.init({
     tableName: 'Request',
     timestamps: false
 });
+
+
+
 
 module.exports = Request;
