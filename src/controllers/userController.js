@@ -116,15 +116,17 @@ const getAllRoles = async (req, res) => {
 }
 const getUserInfo = async (req, res) => {
     try {
-        const Id = req.params.Id;
-        const user_id = req.user_id
-        const userInfo = await userService.getUserInfoById(Id, user_id);
+        const UserId = req.params.Id;
+        const user_id = req.user_id;
+        const role = req.role;
+        const userInfo = await userService.getUserInfoById(user_id, role, UserId);
 
         return res.status(200).json({
             status: 'Success',
             data: userInfo
         });
     } catch (error) {
+        console.log(error)
         return res.status(404).json({
             status: 'Err',
             message: error.message

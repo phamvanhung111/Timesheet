@@ -67,14 +67,11 @@ const createUserService = async (data) => {
 const loginUserService = async (data) => {
     try {
         const { username, password } = data;
-        // Kiểm tra xem email có tồn tại trong hệ thống hay không
         const account = await Accounts.findOne({ where: { UserName: username } });
 
         if (!account) {
             return { status: 'Err', message: 'Email or password is incorrect' };
         }
-
-        // So sánh mật khẩu
         const isPasswordValid = await bcrypt.compare(password, account.Password);
         if (!isPasswordValid) {
             return { status: 'Err', message: 'Email or password is incorrect' };
@@ -117,21 +114,23 @@ const gettAllRoleService = async () => {
         throw new Error(error.message);
     }
 }
-const getUserInfoById = async (Id, user_id) => {
+const getUserInfoById = async (user_id, role, UserId) => {
     try {
-        const userAccount = await Users.findOne({ where: { Account: user_id } });
-        const intId = parseInt(Id, 10)
-        if (userAccount.Id === intId) {
-            const user = await Users.findOne({ where: { Id: intId } });
-            console.log("user", user)
-            if (!user) {
-                throw new Error('User not found');
+        const intUserId = parseInt(UserId, 10)
+        console.log({ user_id, role, UserId })
+        if (role !== 1 && intUserId !== user_id) {
+            return {
+                status: 'Err',
+                message: 'You do not have permission to view requests of other users.'
+            };
+        }
+        const getUserInfo = await Users.findAll({
+            where: {
+                Id: intUserId
             }
-            return user;
-        }
-        else {
-            return { message: 'Day k phai tk cua b' }
-        }
+        })
+        console.log(getUserInfo)
+        return getUserInfo
     } catch (error) {
         throw new Error(error.message);
     }

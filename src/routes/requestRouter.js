@@ -8,4 +8,5 @@ router.post('/createRequest', authUserMiddleware, requestController.createReques
 router.get('/getAllRequestType', authUserMiddleware, requestController.getAllRequestType)
 router.put('/approvelRequest/:Id', authMiddleware, requestController.approvelRequest)
 router.get('/getAllRequestByProject/:ProjectId', authMiddleware, requestController.getAllRequestByProject)
+router.get('/getAllRequestByUser/:UserId', authUserMiddleware, requestController.getAllRequestByUser)
 module.exports = router;
