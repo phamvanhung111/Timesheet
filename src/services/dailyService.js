@@ -2,7 +2,7 @@ const Daily = require('../models/daily');
 const Projects = require('../models/projects')
 const ProjectUser = require('../models/projectUser')
 const Users = require('../models/users')
-const { Op, where } = require('sequelize');
+const filterDate = require('../config/filterDate')
 const createDailyService = async (createDaily, user_id) => {
     try {
         console.log('user_id', user_id)
@@ -47,32 +47,11 @@ const createDailyService = async (createDaily, user_id) => {
 };
 const getDailyByDateRangeService = async (projectId, day, month, year) => {
     try {
-        let whereClause = {
-            ProjectId: projectId
-        };
-
-        // Tạo các điều kiện lọc theo ngày, tháng, và năm
-        if (year) {
-            whereClause.Date = {
-                [Op.gte]: `${year}-01-01`,
-                [Op.lte]: `${year}-12-31`
-            };
-        }
-        if (month) {
-            const startMonth = `${year}-${String(month).padStart(2, '0')}-01`;
-            const endMonth = new Date(year, month, 0).toISOString().split('T')[0];
-            whereClause.Date = {
-                [Op.gte]: startMonth,
-                [Op.lte]: endMonth
-            };
-        }
-        if (day) {
-            const formattedDay = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            whereClause.Date = formattedDay;  // Tìm theo đúng ngày
-        }
-
         const dailyRecords = await Daily.findAll({
-            where: whereClause
+            where: {
+                ProjectId: projectId,
+                Date: filterDate.generateDateFilter(day, month, year)
+            }
         });
 
         return dailyRecords;
@@ -82,32 +61,11 @@ const getDailyByDateRangeService = async (projectId, day, month, year) => {
 };
 const getDailyByUserService = async (projectId, user_id, day, month, year) => {
     try {
-        let whereClause = {
-            UserId: user_id, ProjectId: projectId
-        };
-
-        // Tạo các điều kiện lọc theo ngày, tháng, và năm
-        if (year) {
-            whereClause.Date = {
-                [Op.gte]: `${year}-01-01`,
-                [Op.lte]: `${year}-12-31`
-            };
-        }
-        if (month) {
-            const startMonth = `${year}-${String(month).padStart(2, '0')}-01`;
-            const endMonth = new Date(year, month, 0).toISOString().split('T')[0];
-            whereClause.Date = {
-                [Op.gte]: startMonth,
-                [Op.lte]: endMonth
-            };
-        }
-        if (day) {
-            const formattedDay = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            whereClause.Date = formattedDay;  // Tìm theo đúng ngày
-        }
-
         const dailyUser = await Daily.findAll({
-            where: whereClause
+            where: {
+                UserId: user_id, ProjectId: projectId,
+                Date: filterDate.generateDateFilter(day, month, year)
+            }
         });
         if (!dailyUser) {
             throw new Error('Lỗi1');

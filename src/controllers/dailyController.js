@@ -14,12 +14,12 @@ const createDaily = async (req, res) => {
         })
     }
 }
-// Route lấy dữ liệu Daily theo Project và lọc theo ngày, tháng, hoặc năm
-const getDailyByDateRange = async (req, res) => {
-    const { projectId } = req.params;
-    const { day, month, year } = req.query;
 
+const getDailyByDateRange = async (req, res) => {
     try {
+        const { projectId } = req.params;
+        const { day, month, year } = req.query;
+
         const dailyRecords = await dailyService.getDailyByDateRangeService(projectId, day, month, year);
         if (Array.isArray(dailyRecords) && dailyRecords.length === 0) {
             return res.status(500).json({
@@ -27,6 +27,7 @@ const getDailyByDateRange = async (req, res) => {
                 message: error.message
             });
         }
+
         return res.status(200).json({
             status: 'Success',
             data: dailyRecords

@@ -67,10 +67,36 @@ const getAllRequestByProject = async (req, res) => {
         })
     }
 }
+const getAllRequestByUser = async (req, res) => {
+    try {
+        const userid = req.user_id;
+        const UserId = req.params.UserId;
+        const role = req.role;
+        const { day, month, year } = req.query;
+        console.log({ userid, role, UserId });
+
+        const response = await requsetService.getAllRequestByUserService(userid, role, UserId, day, month, year)
+
+        return res.status(200).json({
+            status: 'Success',
+            data: response
+        });
+    } catch (error) {
+        console.log(error)
+        return res.status(404).json({
+            status: "Err",
+            message: error
+        })
+    }
+}
+
+
+
 
 module.exports = {
     createRequest,
     getAllRequestType,
     approvelRequest,
-    getAllRequestByProject
+    getAllRequestByProject,
+    getAllRequestByUser
 }

@@ -2,7 +2,8 @@ const { where } = require('sequelize');
 const ProjectUser = require('../models/projectUser');
 const Request = require('../models/request');
 const RequestType = require('../models/requestType')
-const { Op } = require('sequelize');
+const { generateCreateAtFilter } = require('../config/filterDate');
+const { parse } = require('dotenv');
 const createRequestService = async (data, user_id) => {
     try {
         console.log(user_id)
@@ -72,35 +73,9 @@ const approvelRequestService = async (updateStatus, Id) => {
 const getAllRequestByProjectService = async (ProjectId, day, month, year) => {
     try {
         let whereClause = {
-            ProjectId: ProjectId
+            ProjectId: ProjectId,
+            CreatedAt: generateCreateAtFilter(day, month, year)
         };
-
-        // Tạo các điều kiện lọc theo ngày, tháng, và năm
-        if (year) {
-            whereClause.CreatedAt = {
-                [Op.gte]: `${year}-01-01 00:00:00`,
-                [Op.lte]: `${year}-12-31 23:59:59`
-            };
-        }
-
-        if (month) {
-            const startMonth = `${year}-${String(month).padStart(2, '0')}-01 00:00:00`;
-            const endMonth = new Date(year, month, 0).toISOString().split('T')[0] + ' 23:59:59';
-            whereClause.CreatedAt = {
-                [Op.gte]: startMonth,
-                [Op.lte]: endMonth
-            };
-        }
-
-        if (day) {
-            const formattedDayStart = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} 00:00:00`;
-            const formattedDayEnd = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} 23:59:59`;
-            whereClause.CreatedAt = {
-                [Op.gte]: formattedDayStart,
-                [Op.lte]: formattedDayEnd
-            };
-        }
-
         const getAllRequestProject = await Request.findAll(
             { where: whereClause }
         )
@@ -113,9 +88,38 @@ const getAllRequestByProjectService = async (ProjectId, day, month, year) => {
     }
 }
 
+const getAllRequestByUserService = async (userid, role, UserId, day, month, year) => {
+    try {
+        const intUserId = parseInt(UserId, 10)
+        if (role !== 1 && intUserId !== userid) {
+            return {
+                status: 'Err',
+                message: 'You do not have permission to view requests of other users.'
+            };
+        }
+        const getAllRequestUser = await Request.findAll(
+            {
+                where: {
+                    UserId: intUserId,
+                    CreatedAt: generateCreateAtFilter(day, month, year)
+                }
+            }
+        )
+        return getAllRequestUser
+    } catch (error) {
+        console.log(error)
+        return {
+            status: 'Err',
+            message: error.message
+        }
+    }
+}
+
+
 module.exports = {
     createRequestService,
     getAllRequestTypeService,
     approvelRequestService,
-    getAllRequestByProjectService
+    getAllRequestByProjectService,
+    getAllRequestByUserService
 }

@@ -29,6 +29,7 @@ const authMiddleware = (req, res, next) => {
         // Kiểm tra xem token đã giải mã có chứa Role không
         if (decoded?.role === 1) {
             req.user_id = decoded.id;
+            req.role = decoded.role;
             next(); // Người dùng có quyền truy cập
         } else {
             return res.status(403).json({ // 403 Forbidden
@@ -59,6 +60,7 @@ const authUserMiddleware = (req, res, next) => {
         if (decoded?.Role === 1 || decoded?.id !== null) {
             //account.id
             req.user_id = decoded.id;
+            req.role = decoded.role;
             next(); // Người dùng có quyền truy cập
         } else {
             return res.status(403).json({ // 403 Forbidden
