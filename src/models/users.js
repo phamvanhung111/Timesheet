@@ -58,7 +58,7 @@ Users.init({
     PhoneNumber: {
         type: DataTypes.STRING
     },
-    Positon: {
+    Position: {
         type: DataTypes.STRING
     },
     Status: {

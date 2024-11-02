@@ -13,13 +13,13 @@ const createUser = async (req, res) => {
         }
         else if (!checkEmail) {
             return res.status(200).json({
-                status: "Err",
+                status: "Err1",
                 message: "The input is email"
             })
         }
         else if (password !== confirmPassword) {
             return res.status(200).json({
-                status: "Err",
+                status: "Err2",
                 message: "The password is equal confirmPassword"
             })
         }
@@ -27,8 +27,9 @@ const createUser = async (req, res) => {
         return res.status(200).json(response)
     }
     catch (e) {
+        console.log(e)
         return res.status(404).json({
-            status: "Err",
+            status: "Err3",
             message: e
         })
     }
@@ -153,6 +154,7 @@ const getUserInfoByEmail = async (req, res) => {
 
 const updateUser = async (req, res) => {
     try {
+        const role = req.role
         const Id = req.params.Id;
         const user_id = req.user_id
         const data = req.body;
@@ -163,7 +165,7 @@ const updateUser = async (req, res) => {
                 message: "The userId is require"
             })
         }
-        const userUpdate = await userService.updateUserById(Id, data, user_id);
+        const userUpdate = await userService.updateUserById(Id, data, user_id, role);
 
         return res.status(200).json({
             status: 'Success',

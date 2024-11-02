@@ -45,6 +45,9 @@ Request.init({
     Hours: {
         type: DataTypes.DECIMAL(5, 2)
     },
+    Date: {
+        type: DataTypes.DATEONLY
+    },
     Status: {
         type: DataTypes.STRING,
         defaultValue: 'Pending'

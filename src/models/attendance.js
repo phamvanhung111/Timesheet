@@ -31,21 +31,15 @@ Attendance.init({
     EarlyLeaveMinutes: {
         type: DataTypes.INTEGER
     },
-    IsLate: {
-        type: DataTypes.BOOLEAN
-    },
-    IsEarlyLeave: {
-        type: DataTypes.BOOLEAN
-    },
-    WorkingHours: {
-        type: DataTypes.DECIMAL(5, 2)
-    },
     ProjectId: {
         type: DataTypes.INTEGER,
         references: {
             model: 'Projects',
             key: 'Id'
         }
+    },
+    WorkingHours: {
+        type: DataTypes.DECIMAL(5, 2)
     },
     RequestId: {
         type: DataTypes.INTEGER,
@@ -56,6 +50,9 @@ Attendance.init({
     },
     Status: {
         type: DataTypes.STRING
+    },
+    FeeMoney: {
+        type: DataTypes.INTEGER
     },
     CreatedAt: {
         type: DataTypes.DATE

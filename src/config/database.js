@@ -1,13 +1,11 @@
 const { Sequelize } = require('sequelize');
 
-// Thay đổi thông tin kết nối dưới đây theo cấu hình của bạn
 const sequelize = new Sequelize('tsadmin', 'root', '123456', {
-    host: 'localhost', // Địa chỉ máy chủ
-    dialect: 'mysql', // Hoặc 'postgres', 'sqlite', 'mssql', v.v.
-    logging: false, // Đặt là true nếu bạn muốn xem các truy vấn SQL
+    host: 'localhost',
+    dialect: 'mysql',
+    logging: false,
 });
 
-// Kiểm tra kết nối
 const testConnection = async () => {
     try {
         await sequelize.authenticate();
@@ -19,4 +17,4 @@ const testConnection = async () => {
 
 testConnection();
 
-module.exports = sequelize;
+module.exports = sequelize; // Đảm bảo rằng bạn xuất đúng đối tượng sequelize

@@ -4,21 +4,26 @@ const Request = require('../models/request');
 const RequestType = require('../models/requestType')
 const { generateCreateAtFilter } = require('../config/filterDate');
 const { parse } = require('dotenv');
+const Attendance = require('../models/attendance');
 const createRequestService = async (data, user_id) => {
     try {
-        console.log(user_id)
+        console.log(user_id);
         const {
             ProjectId,
             TypeId,
             Reason,
-            Hours
+            Hours,
+            Date: requestDate
         } = data;
+
         const userProject = await ProjectUser.findOne({
             where: { UserId: user_id, ProjectId: ProjectId }
-        })
+        });
+
         if (!userProject) {
-            throw new Error('Ban d trong project nay')
+            throw new Error('Bạn không ở trong project này');
         }
+
         const newProject = await Request.create({
             UserId: user_id,
             ProjectId,
@@ -27,7 +32,8 @@ const createRequestService = async (data, user_id) => {
             CreatedAt: new Date(),
             StartAt: null,
             EndAt: null,
-            Hours
+            Hours,
+            Date: requestDate || new Date() // Use requestDate here
         });
 
         if (newProject) {
@@ -38,10 +44,11 @@ const createRequestService = async (data, user_id) => {
             };
         }
     } catch (e) {
-        console.log(e)
+        console.log(e);
         return { status: "Err", message: e.message };
     }
 };
+
 
 
 const getAllRequestTypeService = async () => {
@@ -62,7 +69,15 @@ const approvelRequestService = async (updateStatus, Id) => {
         const updateRequest = await Request.update({
             Status: updateStatus
         }, { where: { Id: Id } })
-        return updateRequest
+
+
+        const requestDate = updateRequest.CreatedAt
+        const requestUserId = updateRequest.UserId
+
+        const attendance = await Attendance.update({
+
+        })
+
     } catch (error) {
         return {
             status: 'Err',
@@ -70,6 +85,7 @@ const approvelRequestService = async (updateStatus, Id) => {
         }
     }
 }
+
 const getAllRequestByProjectService = async (ProjectId, day, month, year) => {
     try {
         let whereClause = {
