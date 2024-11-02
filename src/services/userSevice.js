@@ -3,8 +3,9 @@ const Accounts = require('../models/account')
 const Roles = require('../models/roles')
 const bcrypt = require('bcrypt');
 const { refreshToken, accessToken } = require('./jwtService');
-
+const sequelize = require('../config/database')
 const createUserService = async (data) => {
+    const transaction = await sequelize.transaction();
     try {
         const {
             email,
@@ -23,44 +24,55 @@ const createUserService = async (data) => {
 
         const userExists = await Accounts.findOne({ where: { UserName: email } });
         if (userExists) {
-            return { status: 'Err', message: 'Email is already registered' };
+            return { status: 'Err', message: 'Email đã được đăng ký' };
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newAccount = await Accounts.create({
-            UserName: email,
-            Password: hashedPassword,
-        });
-        const roleInt = parseInt(Role, 10);
-        const newUser = await Users.create({
-            FullName: FullName,
-            Email: email,
-            Age: Age,
-            Role: roleInt,
-            Account: newAccount.Id,
-            Bank: Bank,
-            BankAccount: BankAccount,
-            Address: Address,
-            Indentify: Indentify,
-            Salary: Salary,
-            Sex: Sex,
-            PhoneNumber: PhoneNumber,
-            Created: new Date(),
-            Status: true // Đang hoạt động
-        });
+        const newAccount = await Accounts.create(
+            {
+                UserName: email,
+                Password: hashedPassword,
+            },
+            { transaction }
+        );
 
-        if (newUser) {
-            return {
-                status: "Success",
-                message: "Tạo thành công",
-                data: newUser
-            };
-        }
+        const roleInt = parseInt(Role, 10);
+        const newUser = await Users.create(
+            {
+                FullName: FullName,
+                Email: email,
+                Age: Age,
+                Role: roleInt,
+                Account: newAccount.Id,
+                Bank: Bank,
+                BankAccount: BankAccount,
+                Address: Address,
+                Indentify: Indentify,
+                Salary: Salary,
+                Sex: Sex,
+                PhoneNumber: PhoneNumber,
+                Created: new Date(),
+                Status: true // Đang hoạt động
+            },
+            { transaction }
+        );
+
+        await transaction.commit();
+        return {
+            status: "Success",
+            message: "Tạo thành công",
+            data: newUser
+        };
+
     } catch (e) {
-        console.log(e)
+        await transaction.rollback();
+        console.log(e);
         return { status: "Err", message: e.message };
     }
 };
+
+
+
 
 
 
@@ -154,53 +166,57 @@ const getUserInfoByEmailService = async (email) => {
 };
 
 
-const updateUserById = async (Id, data, user_id) => {
+const updateUserById = async (Id, data, user_id, role) => {
     try {
-        const userAccount = await Users.findOne({ where: { Account: user_id } });
-        const intId = parseInt(Id, 10)
-        if (userAccount.Id === intId) {
-            const userId = await Users.findOne({ where: { Id: Id } });
-            if (userId === null) {
-                return { status: 'Err', message: 'User not define' };
-            }
-            const {
-                FullName,
-                Age,
-                Role,
-                Bank,
-                BankAccount,
-                Address,
-                Indentify,
-                Salary,
-                Sex,
-                PhoneNumber
-            } = data;
-            const updateUser = await Users.update({
-                FullName: FullName,
-                Age,
-                Role,
-                Bank,
-                BankAccount,
-                Address,
-                Indentify,
-                Salary,
-                Sex,
-                PhoneNumber
-            }, {
-                where: { Id: Id }
-            });
-            if (updateUser) {
-                return {
-                    status: "Success",
-                    message: "Update thành công",
-                };
-            }
-        }
-        else {
-            return { message: 'Day k phai tk cua b' }
-        }
+        const intUserId = parseInt(Id, 10)
 
-    } catch (error) {
+        if (role !== 1 && intUserId !== user_id) {
+            return {
+                status: 'Err',
+                message: 'You do not have permission to view requests of other users.'
+            };
+        }
+        const userId = await Users.findOne({ where: { Id: intUserId } });
+        if (userId === null) {
+            return { status: 'Err', message: 'User not define' };
+        }
+        const {
+            FullName,
+            Age,
+            Role,
+            Bank,
+            BankAccount,
+            Address,
+            Indentify,
+            Salary,
+            Sex,
+            PhoneNumber,
+            Position
+        } = data;
+        const updateUser = await Users.update({
+            FullName: FullName,
+            Age,
+            Role,
+            Bank,
+            BankAccount,
+            Address,
+            Indentify,
+            Salary,
+            Sex,
+            PhoneNumber,
+            Position: Position
+        }, {
+            where: { Id: intUserId }
+        });
+        if (updateUser) {
+            return {
+                status: "Success",
+                message: "Update thành công",
+            };
+        }
+    }
+
+    catch (error) {
         throw new Error(error.message);
     }
 };

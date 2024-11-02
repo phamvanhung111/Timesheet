@@ -26,13 +26,13 @@ const authMiddleware = (req, res, next) => {
             });
         }
 
-        // Kiểm tra xem token đã giải mã có chứa Role không
+
         if (decoded?.role === 1) {
             req.user_id = decoded.id;
             req.role = decoded.role;
-            next(); // Người dùng có quyền truy cập
+            next();
         } else {
-            return res.status(403).json({ // 403 Forbidden
+            return res.status(403).json({
                 status: 'Err',
                 message: 'Bạn chưa đủ quyền truy nhập'
             });
@@ -41,17 +41,17 @@ const authMiddleware = (req, res, next) => {
 }
 
 const authUserMiddleware = (req, res, next) => {
-    const token = req.headers.token?.split(' ')[1]; // Lấy token từ header
+    const token = req.headers.token?.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ // 401 Unauthorized
+        return res.status(401).json({
             status: 'Err',
             message: 'Token không hợp lệ'
         });
     }
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
         if (err) {
-            return res.status(403).json({ // 403 Forbidden
+            return res.status(403).json({
                 status: 'Err',
                 message: 'Bạn chưa đủ quyền truy nhập'
             });
