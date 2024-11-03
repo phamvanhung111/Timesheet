@@ -19,7 +19,8 @@ const createUserService = async (data) => {
             Indentify,
             Salary,
             Sex,
-            PhoneNumber
+            PhoneNumber,
+            Position
         } = data;
 
         const userExists = await Accounts.findOne({ where: { UserName: email } });
@@ -51,6 +52,7 @@ const createUserService = async (data) => {
                 Salary: Salary,
                 Sex: Sex,
                 PhoneNumber: PhoneNumber,
+                Position: Position,
                 Created: new Date(),
                 Status: true // Đang hoạt động
             },

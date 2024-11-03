@@ -11,8 +11,8 @@ const createProjectService = async (createProject) => {
             UserId
         } = createProject;
         console.log(createProject);
-        intRole = parseInt(Role, 10);
-        intUserId = parseInt(UserId, 10);
+        const intRole = parseInt(Role, 10);
+        const intUserId = parseInt(UserId, 10);
         if (intRole !== 1) {
             throw new Error('Err');
         }

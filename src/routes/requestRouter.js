@@ -7,6 +7,7 @@ const requestController = require('../controllers/requestController');
 router.post('/createRequest', authUserMiddleware, requestController.createRequest)
 router.get('/getAllRequestType', authUserMiddleware, requestController.getAllRequestType)
 router.put('/approvelRequest/:Id', authMiddleware, requestController.approvelRequest)
+router.put('/updateRequest/:requestId', authUserMiddleware, requestController.updateHourandType)
 router.get('/getAllRequestByProject/:ProjectId', authMiddleware, requestController.getAllRequestByProject)
 router.get('/getAllRequestByUser/:UserId', authUserMiddleware, requestController.getAllRequestByUser)
 module.exports = router;
