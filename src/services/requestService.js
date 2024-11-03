@@ -15,7 +15,9 @@ const createRequestService = async (data, user_id) => {
             Hours,
             Date: requestDate
         } = data;
-
+        if ((TypeId === 1 || TypeId === 2) && Hours > 2.00) {
+            return { status: 400, message: 'Tối đa 2 tiếng' };
+        }
         const userProject = await ProjectUser.findOne({
             where: { UserId: user_id, ProjectId: ProjectId }
         });
@@ -49,6 +51,77 @@ const createRequestService = async (data, user_id) => {
     }
 };
 
+const updateRequestHoursAndTypeService = async (user_id, requestId, newHours, newType) => {
+    try {
+        if ((newType === 1 || newType === 2) && newHours > 2.00) {
+            return { status: 400, message: 'Giờ chỉ có thể tối đa là 2.00 cho loại yêu cầu 1 hoặc 2' };
+        }
+
+        const request = await Request.findOne({ where: { Id: requestId, UserId: user_id } });
+        console.log('Alo', request)
+        if (!request) {
+            return { status: 404, message: 'Không tìm thấy yêu cầu' };
+        }
+
+        // Update the hours and type in the request
+        const [rowsUpdated, updatedRequest] = await Request.update(
+            { Hours: newHours, Type: newType },
+            {
+                where: { Id: requestId },
+                returning: true,
+            }
+        );
+
+        if (rowsUpdated === 0) {
+            return { status: 400, message: 'Không thể cập nhật giờ và loại yêu cầu' };
+        }
+
+        // Find the associated attendance record
+        const attendanceRecord = await Attendance.findOne({ where: { RequestId: requestId } });
+        if (attendanceRecord) {
+            const { CheckIn, CheckOut } = attendanceRecord;
+
+            // Recalculate attendance fields based on the new Hours and Type
+            const lateMinutes = CheckIn > '08:30:00'
+                ? (timeToMinutes(CheckIn) - timeToMinutes('08:30:00')) - (newType === 1 || newType === 3 ? newHours * 60 : 0)
+                : (timeToMinutes(CheckIn) - timeToMinutes('08:30:00'));
+
+            const earlyLeaveMinutes = CheckOut < '17:30:00'
+                ? (timeToMinutes(CheckOut) - timeToMinutes('17:30:00')) + (newType === 2 || newType === 4 ? newHours * 60 : 0)
+                : (timeToMinutes('17:30:00') - timeToMinutes(CheckOut));
+
+            const workingHours = (timeToMinutes(CheckOut) - timeToMinutes(CheckIn)) / 60 - 1;
+
+            // Calculate the fee based on the attendance record
+            let feeMoney = 0;
+            if (!CheckIn && !CheckOut) {
+                feeMoney = 100000;
+            } else if (!CheckIn || !CheckOut) {
+                feeMoney = 3000;
+            } else if (lateMinutes > 0 || earlyLeaveMinutes > 0) {
+                feeMoney = 50000;
+            }
+
+            // Update the attendance record with recalculated values
+            await Attendance.update({
+                LateMinutes: lateMinutes,
+                EarlyLeaveMinutes: earlyLeaveMinutes,
+                WorkingHours: workingHours,
+                FeeMoney: feeMoney
+            }, {
+                where: { RequestId: requestId }
+            });
+        }
+
+
+        return { status: 200, message: 'Giờ và loại yêu cầu đã được cập nhật thành công', updatedRequest };
+    } catch (error) {
+        console.error(error);
+        return { status: 500, message: 'Đã xảy ra lỗi', error };
+    }
+};
+
+
 
 
 const getAllRequestTypeService = async () => {
@@ -62,29 +135,76 @@ const getAllRequestTypeService = async () => {
         }
     }
 }
-
-const approvelRequestService = async (updateStatus, Id) => {
+const approvelRequestService = async (requestId, Status) => {
     try {
-        console.log(updateStatus)
-        const updateRequest = await Request.update({
-            Status: updateStatus
-        }, { where: { Id: Id } })
-
-
-        const requestDate = updateRequest.CreatedAt
-        const requestUserId = updateRequest.UserId
-
-        const attendance = await Attendance.update({
-
-        })
-
-    } catch (error) {
-        return {
-            status: 'Err',
-            message: error.message
+        const oldRequest = await Request.findOne({
+            where: { Id: requestId }
+        });
+        if (!oldRequest) {
+            return { status: 404, message: 'Không tìm thấy yêu cầu' };
         }
+
+        const [rowsUpdated, updatedRequest] = await Request.update(
+            { Status: Status },
+            {
+                where: { Id: requestId },
+                returning: true,
+            }
+        );
+
+        if (rowsUpdated === 0) {
+            return { status: 400, message: 'Trạng thái yêu cầu không được cập nhật' };
+        }
+
+        const attendanceRecord = await Attendance.findOne({
+            where: { RequestId: requestId }
+        });
+        if (!attendanceRecord) {
+            return { status: 404, message: 'Không tìm thấy bản ghi điểm danh' };
+        }
+
+        if (Status === 'Approved' && oldRequest.Status === 'Pending') {
+            const { CheckIn, CheckOut } = attendanceRecord;
+            const { Type, Hours } = oldRequest;
+
+            const lateMinutes = CheckIn > '08:30:00'
+                ? (timeToMinutes(CheckIn) - timeToMinutes('08:30:00')) - (Type === 1 || Type === 3 ? Hours * 60 : 0)
+                : 0;
+
+            const earlyLeaveMinutes = CheckOut < '17:30:00'
+                ? (timeToMinutes(CheckOut) - timeToMinutes('17:30:00')) + (Type === 2 || Type === 4 ? Hours * 60 : 0)
+                : 0;
+
+            const workingHours = (timeToMinutes(CheckOut) - timeToMinutes(CheckIn)) / 60 - 1;
+
+            let feeMoney = 0;
+            if (!CheckIn && !CheckOut) {
+                feeMoney = 100000;
+            } else if (!CheckIn || !CheckOut) {
+                feeMoney = 3000;
+            } else if (lateMinutes > 0 || earlyLeaveMinutes > 0) {
+                feeMoney = 50000;
+            }
+
+            await Attendance.update({
+                LateMinutes: lateMinutes,
+                EarlyLeaveMinutes: earlyLeaveMinutes,
+                WorkingHours: workingHours,
+                FeeMoney: feeMoney
+            }, {
+                where: { RequestId: requestId }
+            });
+        }
+
+        return { status: 200, message: 'Yêu cầu đã được cập nhật thành công', updatedRequest };
+    } catch (error) {
+        console.error(error);
+        return { status: 500, message: 'Đã xảy ra lỗi', error };
     }
-}
+};
+
+
+
 
 const getAllRequestByProjectService = async (ProjectId, day, month, year) => {
     try {
@@ -131,11 +251,17 @@ const getAllRequestByUserService = async (userid, role, UserId, day, month, year
     }
 }
 
+function timeToMinutes(time) {
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    return hours * 60 + minutes + seconds / 60;
+}
+
 
 module.exports = {
     createRequestService,
     getAllRequestTypeService,
     approvelRequestService,
     getAllRequestByProjectService,
-    getAllRequestByUserService
+    getAllRequestByUserService,
+    updateRequestHoursAndTypeService
 }

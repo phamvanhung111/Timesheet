@@ -35,21 +35,74 @@ const getAllRequestType = async (req, res) => {
 
 const approvelRequest = async (req, res) => {
     try {
-        const { updateStatus } = req.body
-        const Id = req.params.Id
-        const approvelRepuest = await requsetService.approvelRequestService(updateStatus, Id)
+        const requestId = req.params.Id;
+
+        const { Status } = req.body;
+
+        const result = await requsetService.approvelRequestService(requestId, Status);
+
+        if (result.status === 404) {
+            return res.status(404).json({
+                status: 'Error',
+                message: result.message
+            });
+        } else if (result.status === 500) {
+            return res.status(500).json({
+                status: 'Error',
+                message: result.message
+            });
+        }
+
         return res.status(200).json({
             status: 'Success',
-            data: approvelRepuest
+            data: result.message,
         });
+
     } catch (error) {
-        console.log(error);
-        return {
-            status: 'Err',
+        console.error(error);
+        return res.status(500).json({
+            status: 'Error',
             message: error.message
-        }
+        });
     }
-}
+};
+
+const updateHourandType = async (req, res) => {
+    try {
+        const requestId = req.params.requestId;
+        console.log(requestId)
+        const user_id = req.user_id
+
+        const { newHours, newType } = req.body;
+
+        const result = await requsetService.updateRequestHoursAndTypeService(user_id, requestId, newHours, newType);
+
+        if (result.status === 404) {
+            return res.status(404).json({
+                status: 'Error',
+                message: result.message
+            });
+        } else if (result.status === 500) {
+            return res.status(500).json({
+                status: 'Error',
+                message: result.message
+            });
+        }
+
+        return res.status(200).json({
+            status: 'Success',
+            data: result.message,
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            status: 'Error',
+            message: error.message
+        });
+    }
+};
+
 
 const getAllRequestByProject = async (req, res) => {
     try {
@@ -98,5 +151,6 @@ module.exports = {
     getAllRequestType,
     approvelRequest,
     getAllRequestByProject,
-    getAllRequestByUser
+    getAllRequestByUser,
+    updateHourandType
 }
