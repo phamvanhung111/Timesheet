@@ -15,12 +15,18 @@ const createDaily = async (req, res) => {
     }
 }
 
-const getDailyByDateRange = async (req, res) => {
+const getDailyByTimeRange = async (req, res) => {
     try {
+<<<<<<< HEAD
         const { projectId } = req.params;
         const { day, month, year } = req.body;
 
         const dailyRecords = await dailyService.getDailyByDateRangeService(projectId, day, month, year);
+=======
+        const user_id = req.user_id;
+        const { startDate, endDate } = req.body;
+        const dailyRecords = await dailyService.getDailyByTimeRangeService(startDate, endDate, user_id);
+>>>>>>> ae77fae5e3723cd423850eb3c992139a07de3ec7
         if (Array.isArray(dailyRecords) && dailyRecords.length === 0) {
             return res.status(500).json({
                 status: 'Error',
@@ -79,7 +85,7 @@ const updateDaily = async (req, res) => {
 }
 module.exports = {
     createDaily,
-    getDailyByDateRange,
+    getDailyByTimeRange,
     getDailyByUser,
     updateDaily
 

@@ -3,6 +3,7 @@ const Projects = require('../models/projects')
 const ProjectUser = require('../models/projectUser')
 const Users = require('../models/users')
 const filterDate = require('../config/filterDate')
+const { Op } = require('sequelize');
 const createDailyService = async (createDaily, user_id) => {
     try {
         console.log('user_id', user_id)
@@ -45,18 +46,23 @@ const createDailyService = async (createDaily, user_id) => {
         return { status: "Err", message: e.message };
     }
 };
-const getDailyByDateRangeService = async (projectId, day, month, year) => {
+const getDailyByTimeRangeService = async (startDate, endDate, user_id) => {
     try {
-        const dailyRecords = await Daily.findAll({
+        const dailies = await Daily.findAll({
             where: {
-                ProjectId: projectId,
-                Date: filterDate.generateDateFilter(day, month, year)
+                UserId: user_id,
+                Date: {
+                    [Op.between]: [startDate, endDate]
+                }
             }
         });
-
-        return dailyRecords;
+        if (!dailies) {
+            throw new Error('Lỗi1');
+        }
+        return dailies;
     } catch (error) {
-        throw new Error('Unable to retrieve Daily records');
+        console.log(error);
+        throw new Error('Lỗi2');
     }
 };
 const getDailyByUserService = async (projectId, user_id, day, month, year) => {
@@ -109,7 +115,7 @@ const updateDailyService = async (updateDaily, Id) => {
 };
 module.exports = {
     createDailyService,
-    getDailyByDateRangeService,
+    getDailyByTimeRangeService,
     getDailyByUserService,
     updateDailyService
 };
