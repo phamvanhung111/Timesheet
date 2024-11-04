@@ -3,7 +3,9 @@ const projectService = require('../services/projectService');
 const createProject = async (req, res) => {
     try {
         const createProject = req.body;
-        const response = await projectService.createProjectService(createProject)
+        const userId = req.user_id
+        const roleId = req.role
+        const response = await projectService.createProjectService(createProject, userId, roleId)
         return res.status(200).json(response)
     }
     catch (e) {
@@ -27,6 +29,38 @@ const getAllProject = async (req, res) => {
         });
     }
 }
+
+const searchProjectByName = async (req, res) => {
+    try {
+        const { name } = req.body; 
+        const projects = await projectService.searchProjectByNameService(name);
+        return res.status(200).json({
+            status: 'Success',
+            data: projects
+        });
+    } catch (e) {
+        return res.status(404).json({
+            status: 'Err',
+            message: e.message
+        });
+    }
+};
+
+const getProjectByUserId = async (req, res) => {
+    try {
+        const userId = req.user_id;
+        const userProjects = await projectService.getProjectByUserIdService(userId);
+        return res.status(200).json({
+            status: 'Success',
+            data: userProjects
+        });
+    } catch (e) {
+        return res.status(404).json({
+            status: 'Err',
+            message: e.message
+        });
+    }
+};
 
 const addUsersToProject = async (req, res) => {
     const { projectId, userIds } = req.body;
@@ -97,5 +131,7 @@ module.exports = {
     getAllProject,
     addUsersToProject,
     removeUsersFromProject,
-    updateProject
+    updateProject,
+    searchProjectByName,
+    getProjectByUserId
 }
