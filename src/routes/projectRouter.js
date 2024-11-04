@@ -8,4 +8,6 @@ router.get('/getAllProject', authMiddleware, projectController.getAllProject)
 router.post('/addUsersToProject', authMiddleware, projectController.addUsersToProject)
 router.post('/removeUsersToProject', authMiddleware, projectController.removeUsersFromProject)
 router.put('/updateProject/:Id', authMiddleware, projectController.updateProject)
+router.post('/searchProjectByName', authMiddleware, projectController.searchProjectByName)
+router.get('/getProjectByUserId', authUserMiddleware, projectController.getProjectByUserId)
 module.exports = router;

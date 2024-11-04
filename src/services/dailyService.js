@@ -24,9 +24,9 @@ const createDailyService = async (createDaily, user_id) => {
                 UserId: user_id, ProjectId: projectIdInt
             }
         });
-        console.log(user)
+
         if (!user) {
-            throw new Error('Bạn tổn luồi tham gia dự án')
+            throw new Error('Bạn chưa tham gia dự án')
         }
         const UserId1 = user.UserId
         const newDaily = await Daily.create({

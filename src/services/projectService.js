@@ -1,18 +1,17 @@
 const Projects = require('../models/projects')
 const Users = require('../models/users')
 const ProjectUser = require('../models/projectUser')
-const createProjectService = async (createProject) => {
+const { Op } = require('sequelize');
+const createProjectService = async (createProject, userId, roleId) => {
     try {
         const {
             ProjectName,
             ClientName,
-            Description,
-            Role,
-            UserId
+            Description
         } = createProject;
         console.log(createProject);
-        const intRole = parseInt(Role, 10);
-        const intUserId = parseInt(UserId, 10);
+        const intRole = parseInt(roleId, 10);
+        const intUserId = parseInt(userId, 10);
         if (intRole !== 1) {
             throw new Error('Err');
         }
@@ -166,13 +165,65 @@ const updateProjectById = async (Id, data) => {
     }
 };
 
+const searchProjectByNameService = async (projectName) => {
+    try {
+        const projects = await Projects.findAll({
+            where: {
+                ProjectName: {
+                    [Op.like]: `%${projectName}%` // Sử dụng LIKE cho MySQL
+                }
+            }
+        });
+        
+        if (!projects || projects.length === 0) {
+            throw new Error('No projects found with this name.');
+        }
+        
+        return projects;
+    } catch (error) {
+        throw new Error(error.message || 'Error searching projects by name.');
+    }
+};
 
+const getProjectByUserIdService = async (userId) => {
+    try {
+        const userIdInt = parseInt(userId, 10); // Ép kiểu userId thành số nguyên
 
+        if (isNaN(userIdInt)) {
+            throw new Error('Invalid user ID format');
+        }
+
+        const projectUserRecords = await ProjectUser.findAll({
+            where: {
+                UserId: userIdInt
+            }
+        });
+        console.log(projectUserRecords)
+
+        if (!projectUserRecords || projectUserRecords.length === 0) {
+            throw new Error('No projects found for this user.');
+        }
+
+        const projectIds = projectUserRecords.map(record => record.ProjectId);
+
+        const projects = await Projects.findAll({
+            where: {
+                id: projectIds
+            }
+        });
+
+        return projects;
+    } catch (error) {
+        throw new Error(error.message || 'Error retrieving projects by user ID.');
+    }
+};
 
 module.exports = {
     createProjectService,
     getAllProjectService,
     addUsersToProjectService,
     removeUsersFromProjectService,
-    updateProjectById
+    updateProjectById,
+    searchProjectByNameService,
+    getProjectByUserIdService
 }
