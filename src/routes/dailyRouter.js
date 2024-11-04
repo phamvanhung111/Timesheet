@@ -4,7 +4,7 @@ const dailyController = require("../controllers/dailyController");
 const { authMiddleware, authUserMiddleware } = require('../middleware/authMiddleware');
 
 router.post('/createDaily', authUserMiddleware, dailyController.createDaily)
-router.get('/getDailyByDateRange/:projectId', authMiddleware, dailyController.getDailyByDateRange)
+router.get('/getDailyByTimeRange', authMiddleware, dailyController.getDailyByTimeRange)
 router.get('/getDailyByUser/:projectId', authUserMiddleware, dailyController.getDailyByUser);
 router.post('/updateDaily/:Id', authUserMiddleware, dailyController.updateDaily)
 module.exports = router;
