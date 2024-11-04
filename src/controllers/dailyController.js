@@ -18,7 +18,7 @@ const createDaily = async (req, res) => {
 const getDailyByDateRange = async (req, res) => {
     try {
         const { projectId } = req.params;
-        const { day, month, year } = req.query;
+        const { day, month, year } = req.body;
 
         const dailyRecords = await dailyService.getDailyByDateRangeService(projectId, day, month, year);
         if (Array.isArray(dailyRecords) && dailyRecords.length === 0) {
@@ -41,7 +41,7 @@ const getDailyByDateRange = async (req, res) => {
 };
 const getDailyByUser = async (req, res) => {
     const { projectId } = req.params;
-    const { day, month, year } = req.query;
+    const { day, month, year } = req.body;
     const user_id = req.user_id;
     console.log("alo", projectId)
     try {

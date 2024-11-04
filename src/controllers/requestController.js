@@ -107,7 +107,7 @@ const updateHourandType = async (req, res) => {
 const getAllRequestByProject = async (req, res) => {
     try {
         const ProjectId = req.params.ProjectId
-        const { day, month, year } = req.query;
+        const { day, month, year } = req.body;
         const response = await requsetService.getAllRequestByProjectService(ProjectId, day, month, year)
         return res.status(200).json({
             status: 'Success',
@@ -125,7 +125,7 @@ const getAllRequestByUser = async (req, res) => {
         const userid = req.user_id;
         const UserId = req.params.UserId;
         const role = req.role;
-        const { day, month, year } = req.query;
+        const { day, month, year } = req.body;
         console.log({ userid, role, UserId });
 
         const response = await requsetService.getAllRequestByUserService(userid, role, UserId, day, month, year)
