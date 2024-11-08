@@ -10,7 +10,6 @@ const Request = require('./request');
 const ProjectUser = require('./projectUser');
 const CheckIn = require('./checkIn');
 const CheckOut = require('./checkOut');
-const WorkingHours = require('./workingHours')
 
 const syncDatabase = async () => {
     try {

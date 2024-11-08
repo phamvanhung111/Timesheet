@@ -1,7 +1,7 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-class WorkingHours extends Model { }
+class SalaryUser extends Model { }
 
 WorkingHours.init({
     Id: {
@@ -26,9 +26,9 @@ WorkingHours.init({
     }
 }, {
     sequelize,
-    modelName: 'WorkingHours',
-    tableName: 'WorkingHours',
+    modelName: 'SalaryUser',
+    tableName: 'SalaryUser',
     timestamps: false
 });
 
-module.exports = WorkingHours;
+module.exports = SalaryUser;

@@ -75,7 +75,7 @@ const updateHourandType = async (req, res) => {
 
         const { newHours, newType } = req.body;
 
-        const result = await requsetService.updateRequestHoursAndTypeService(user_id, requestId, newHours, newType);
+        const result = await requsetService.updateRequestService(user_id, requestId, newHours, newType);
 
         if (result.status === 404) {
             return res.status(404).json({
@@ -106,9 +106,8 @@ const updateHourandType = async (req, res) => {
 
 const getAllRequestByProject = async (req, res) => {
     try {
-        const ProjectId = req.params.ProjectId
-        const { day, month, year } = req.body;
-        const response = await requsetService.getAllRequestByProjectService(ProjectId, day, month, year)
+        const { startDate, endDate, ProjectId } = req.body;
+        const response = await requsetService.getAllRequestByProjectService(ProjectId, startDate, endDate)
         return res.status(200).json({
             status: 'Success',
             data: response
