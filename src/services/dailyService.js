@@ -2,7 +2,6 @@ const Daily = require('../models/daily');
 const Projects = require('../models/projects')
 const ProjectUser = require('../models/projectUser')
 const Users = require('../models/users')
-const filterDate = require('../config/filterDate')
 const { Op } = require('sequelize');
 const createDailyService = async (createDaily, user_id) => {
     try {
@@ -65,12 +64,12 @@ const getDailyByTimeRangeService = async (startDate, endDate, user_id) => {
         throw new Error('Lỗi2');
     }
 };
-const getDailyByUserService = async (projectId, user_id, day, month, year) => {
+const getDailyByUserService = async (user_id, Date) => {
     try {
         const dailyUser = await Daily.findAll({
             where: {
-                UserId: user_id, ProjectId: projectId,
-                Date: filterDate.generateDateFilter(day, month, year)
+                UserId: user_id,
+                Date: Date
             }
         });
         if (!dailyUser) {

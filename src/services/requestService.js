@@ -5,6 +5,9 @@ const RequestType = require('../models/requestType')
 const { generateCreateAtFilter } = require('../config/filterDate');
 const { parse } = require('dotenv');
 const Attendance = require('../models/attendance');
+const { Op } = require('sequelize');
+
+const moment = require('moment')
 const createRequestService = async (data, user_id) => {
     try {
         console.log(user_id);
@@ -51,7 +54,7 @@ const createRequestService = async (data, user_id) => {
     }
 };
 
-const updateRequestHoursAndTypeService = async (user_id, requestId, newHours, newType) => {
+const updateRequestService = async (user_id, requestId, newHours, newType) => {
     try {
         if ((newType === 1 || newType === 2) && newHours > 2.00) {
             return { status: 400, message: 'Giờ chỉ có thể tối đa là 2.00 cho loại yêu cầu 1 hoặc 2' };
@@ -62,57 +65,16 @@ const updateRequestHoursAndTypeService = async (user_id, requestId, newHours, ne
         if (!request) {
             return { status: 404, message: 'Không tìm thấy yêu cầu' };
         }
-
+        if (request.Status === 'Approved') {
+            return { status: 404, message: 'Dã duyệt, không thể chỉnh sửa' };
+        }
         // Update the hours and type in the request
-        const [rowsUpdated, updatedRequest] = await Request.update(
+        const updatedRequest = await Request.update(
             { Hours: newHours, Type: newType },
             {
                 where: { Id: requestId },
-                returning: true,
             }
         );
-
-        if (rowsUpdated === 0) {
-            return { status: 400, message: 'Không thể cập nhật giờ và loại yêu cầu' };
-        }
-
-        // Find the associated attendance record
-        const attendanceRecord = await Attendance.findOne({ where: { RequestId: requestId } });
-        if (attendanceRecord) {
-            const { CheckIn, CheckOut } = attendanceRecord;
-
-            // Recalculate attendance fields based on the new Hours and Type
-            const lateMinutes = CheckIn > '08:30:00'
-                ? (timeToMinutes(CheckIn) - timeToMinutes('08:30:00')) - (newType === 1 || newType === 3 ? newHours * 60 : 0)
-                : (timeToMinutes(CheckIn) - timeToMinutes('08:30:00'));
-
-            const earlyLeaveMinutes = CheckOut < '17:30:00'
-                ? (timeToMinutes(CheckOut) - timeToMinutes('17:30:00')) + (newType === 2 || newType === 4 ? newHours * 60 : 0)
-                : (timeToMinutes('17:30:00') - timeToMinutes(CheckOut));
-
-            const workingHours = (timeToMinutes(CheckOut) - timeToMinutes(CheckIn)) / 60 - 1;
-
-            // Calculate the fee based on the attendance record
-            let feeMoney = 0;
-            if (!CheckIn && !CheckOut) {
-                feeMoney = 100000;
-            } else if (!CheckIn || !CheckOut) {
-                feeMoney = 3000;
-            } else if (lateMinutes > 0 || earlyLeaveMinutes > 0) {
-                feeMoney = 50000;
-            }
-
-            // Update the attendance record with recalculated values
-            await Attendance.update({
-                LateMinutes: lateMinutes,
-                EarlyLeaveMinutes: earlyLeaveMinutes,
-                WorkingHours: workingHours,
-                FeeMoney: feeMoney
-            }, {
-                where: { RequestId: requestId }
-            });
-        }
-
 
         return { status: 200, message: 'Giờ và loại yêu cầu đã được cập nhật thành công', updatedRequest };
     } catch (error) {
@@ -206,50 +168,76 @@ const approvelRequestService = async (requestId, Status) => {
 
 
 
-const getAllRequestByProjectService = async (ProjectId, day, month, year) => {
+const getAllRequestByProjectService = async (ProjectId, startDate, endDate) => {
     try {
-        let whereClause = {
+
+        const whereCondition = {
             ProjectId: ProjectId,
-            CreatedAt: generateCreateAtFilter(day, month, year)
         };
-        const getAllRequestProject = await Request.findAll(
-            { where: whereClause }
-        )
-        return getAllRequestProject
+
+
+        if (startDate && endDate) {
+            whereCondition.Date = {
+                [Op.between]: [startDate, endDate],
+            };
+        }
+
+        const getAllRequestProject = await Request.findAll({
+            where: whereCondition,
+        });
+
+        return getAllRequestProject;
     } catch (error) {
         return {
             status: 'Err',
-            message: error.message
-        }
+            message: error.message,
+        };
     }
-}
+};
 
-const getAllRequestByUserService = async (userid, role, UserId, day, month, year) => {
+
+const getAllRequestByUserService = async (userid, role, UserId, startDate, endDate) => {
     try {
-        const intUserId = parseInt(UserId, 10)
+        const intUserId = parseInt(UserId, 10);
+
+        // Kiểm tra quyền truy cập của user
         if (role !== 1 && intUserId !== userid) {
             return {
                 status: 'Err',
                 message: 'You do not have permission to view requests of other users.'
             };
         }
-        const getAllRequestUser = await Request.findAll(
-            {
-                where: {
-                    UserId: intUserId,
-                    CreatedAt: generateCreateAtFilter(day, month, year)
-                }
-            }
-        )
-        return getAllRequestUser
+
+        // Tạo điều kiện tìm kiếm cơ bản
+        const whereCondition = {
+            UserId: intUserId,
+        };
+
+        // Nếu có startDate và endDate, thêm điều kiện lọc theo ngày
+        if (startDate && endDate) {
+            const formattedStartDate = moment(startDate, "YY-DD-MM").format("YYYY-MM-DD HH:mm:ss");
+            const formattedEndDate = moment(endDate, "YY-DD-MM").format("YYYY-MM-DD HH:mm:ss");
+
+            whereCondition.CreatedAt = {
+                [Op.between]: [formattedStartDate, formattedEndDate],
+            };
+        }
+
+        // Tìm tất cả các yêu cầu của user trong khoảng thời gian (nếu có) hoặc tất cả bản ghi nếu không có thời gian
+        const getAllRequestUser = await Request.findAll({
+            where: whereCondition,
+        });
+
+        return getAllRequestUser;
     } catch (error) {
-        console.log(error)
+        console.log(error);
         return {
             status: 'Err',
             message: error.message
-        }
+        };
     }
-}
+};
+
 
 function timeToMinutes(time) {
     const [hours, minutes, seconds] = time.split(':').map(Number);
@@ -263,5 +251,5 @@ module.exports = {
     approvelRequestService,
     getAllRequestByProjectService,
     getAllRequestByUserService,
-    updateRequestHoursAndTypeService
+    updateRequestService
 }
