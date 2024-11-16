@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 
 class SalaryUser extends Model { }
 
-WorkingHours.init({
+SalaryUser.init({
     Id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -16,13 +16,24 @@ WorkingHours.init({
             key: 'Id'
         }
     },
-    StartAt: {
-        type: DataTypes.FLOAT,
-        defaultValue: 8.5
+    SalaryReal: {
+        type: DataTypes.INTEGER
     },
-    EndAt: {
-        type: DataTypes.FLOAT,
-        defaultValue: 17.5
+    Fee: {
+        type: DataTypes.INTEGER
+    },
+    DayOfMonth: {
+        type: DataTypes.INTEGER
+    },
+    DayReal: {
+        type: DataTypes.INTEGER
+    },
+    Time: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+            is: /^\d{4}-(0[1-9]|1[0-2])$/, // Định dạng YYYY-MM
+        }
     }
 }, {
     sequelize,
