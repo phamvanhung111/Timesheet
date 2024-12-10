@@ -3,14 +3,14 @@ const Roles = require('./roles');
 const Account = require('./account');
 const Users = require('./users');
 const Projects = require('./projects');
-const Attendance = require('./attendance');
 const Daily = require('./daily');
 const RequestType = require('./requestType');
 const Request = require('./request');
 const ProjectUser = require('./projectUser');
 const CheckIn = require('./checkIn');
 const CheckOut = require('./checkOut');
-const SalaryReal = require('./salaryUser')
+const SalaryReal = require('./salaryUser');
+const Attendance = require('./attendance');
 
 const syncDatabase = async () => {
     try {
