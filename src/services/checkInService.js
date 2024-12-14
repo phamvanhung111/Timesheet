@@ -1,6 +1,9 @@
-const checkIn = require('../models/checkIn');
+const CheckIn = require('../models/checkIn');
 const { generateDateFilter } = require('../config/filterDate');
-const { get } = require('mongoose');
+const CheckOut = require('../models/CheckOut');
+const { Op } = require('sequelize');
+const moment = require('moment');
+
 const createCheckInService = async (data, user_id) => {
     try {
         const { CheckIn } = data;
@@ -9,7 +12,7 @@ const createCheckInService = async (data, user_id) => {
         const currentDate = new Date();
         const currentTime = currentDate.toTimeString().split(' ')[0]; // Lấy phần giờ:phút:giây
 
-        const createCheckIn = await checkIn.create({
+        const createCheckIn = await CheckIn.create({
             UserId: user_id,
             CheckOut: CheckIn,
             CheckIn: currentTime, // Lưu thời gian hiện tại vào trường CheckIn
@@ -49,10 +52,68 @@ const getCheckInUserService = async (user_id, day, month, year) => {
     }
 };
 
+const getWorkingTimeService = async (userId, startDate, endDate) => {
+    try {
+        // Generate all dates between startDate and endDate
+        const datesInRange = [];
+        let currentDate = moment(startDate); // Using moment to handle date
+        const endMoment = moment(endDate);
+        console.log(currentDate, endDate)
+
+        // Loop through each date and push into datesInRange array
+        while (currentDate.isSameOrBefore(endMoment)) {
+            datesInRange.push(currentDate.format('YYYY-MM-DD'));
+            currentDate = currentDate.add(1, 'day');
+        }
+
+        // Retrieve check-in and check-out records within the specified date range
+        const checkInRecords = await CheckIn.findAll({
+            where: {
+                UserId: userId,
+                Date: { [Op.between]: [startDate, endDate] }
+            }
+        });
+
+        const checkOutRecords = await CheckOut.findAll({
+            where: {
+                UserId: userId,
+                Date: { [Op.between]: [startDate, endDate] }
+            }
+        });
+
+        // Map check-in and check-out records by date
+        const checkInMap = checkInRecords.reduce((map, record) => {
+            map[record.Date] = record.CheckIn;
+            return map;
+        }, {});
+
+        const checkOutMap = checkOutRecords.reduce((map, record) => {
+            map[record.Date] = record.CheckOut;
+            return map;
+        }, {});
+
+        // Combine records, ensuring each date has entries for check-in and check-out
+        const workingTimes = datesInRange.map(date => ({
+            date,
+            checkIn: checkInMap[date] || null,
+            checkOut: checkOutMap[date] || null
+        }));
+
+        return {
+            status: "Success",
+            message: "Working times fetched successfully.",
+            data: workingTimes
+        };
+    } catch (error) {
+        console.error("Error fetching working times:", error);
+        throw new Error("Failed to fetch working times.");
+    }
+};
 
 
 module.exports = {
     createCheckInService,
-    getCheckInUserService
+    getCheckInUserService,
+    getWorkingTimeService
 }
 

@@ -8,4 +8,5 @@ router.post('/createCheckIn', authUserMiddleware, checkInController.createCheckI
 router.post('/createCheckOut', authUserMiddleware, checkOutController.createCheckOut)
 router.post('/getCheckInUser', authUserMiddleware, checkInController.getCheckInUser)
 router.post('/getCheckOutUser', authUserMiddleware, checkOutController.getCheckOutUser)
+router.post('/getWorkingTime', authUserMiddleware, checkInController.getWorkingTime)
 module.exports = router;

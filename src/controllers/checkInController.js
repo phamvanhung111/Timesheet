@@ -33,7 +33,25 @@ const getCheckInUser = async (req, res) => {
         })
     }
 }
+
+const getWorkingTime = async (req, res) => {
+    try {
+        const user_id = req.user_id;
+        const { startDate, endDate } = req.body; // Expecting startDate and endDate in 'YYYY-MM-DD' format
+        const response = await checkInService.getWorkingTimeService(user_id, startDate, endDate);
+
+        return res.status(200).json(response);
+    } catch (e) {
+        console.log(e);
+        return res.status(404).json({
+            status: "Err",
+            message: e.message || "Error fetching working times"
+        });
+    }
+};
+
 module.exports = {
     createCheckIn,
-    getCheckInUser
+    getCheckInUser,
+    getWorkingTime
 }
