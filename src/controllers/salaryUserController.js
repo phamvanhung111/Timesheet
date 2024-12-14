@@ -1,4 +1,4 @@
-const { createSalaryUserService } = require('../services/salaryUserService');
+const { createOrFetchSalaryForMonthService } = require('../services/salaryUserService');
 
 const createSalaryUser = async (req, res) => {
     try {

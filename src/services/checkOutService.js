@@ -1,9 +1,9 @@
 const { generateDateFilter } = require('../config/filterDate');
-const CheckOut = require('../models/CheckOut');
+const CheckOut = require('../models/checkOut');
 const createCheckOutService = async (user_id) => {
     try {
         const currentDate = new Date();
-        const currentTime = currentDate.toTimeString().split(' ')[0]; // Lấy phần giờ:phút:giây
+        const currentTime = currentDate.toTimeString().split(' ')[0];
 
         const createCheckOut = await CheckOut.create({
             UserId: user_id,

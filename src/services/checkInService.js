@@ -1,13 +1,12 @@
 const CheckIn = require('../models/checkIn');
 const { generateDateFilter } = require('../config/filterDate');
-const CheckOut = require('../models/CheckOut');
 const { Op } = require('sequelize');
 const moment = require('moment');
 
 const createCheckInService = async (user_id) => {
     try {
         const currentDate = new Date();
-        const currentTime = currentDate.toTimeString().split(' ')[0]; // Lấy phần giờ:phút:giây
+        const currentTime = currentDate.toTimeString().split(' ')[0]
 
         const createCheckIn = await CheckIn.create({
             UserId: user_id,

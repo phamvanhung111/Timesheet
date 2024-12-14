@@ -54,7 +54,20 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
         if (!year || !month) {
             throw new Error('Both year and month are required');
         }
+        // Lấy tháng và năm hiện tại
+        const currentDate = new Date();
+        const currentMonth = currentDate.getMonth() + 1; // Tháng bắt đầu từ 0
+        const currentYear = currentDate.getFullYear();
 
+        // Kiểm tra nếu nhập tháng hiện tại hoặc tháng trong tương lai
+        if (
+            parseInt(year, 10) > currentYear ||
+            (parseInt(year, 10) === currentYear && parseInt(month, 10) >= currentMonth)
+        ) {
+            throw new Error(
+                `Invalid input: Only salaries for previous months can be processed. Current month is ${currentMonth}/${currentYear}.`
+            );
+        }
 
         const Time = `${year}-${month.toString().padStart(2, '0')}`;
 
@@ -64,7 +77,7 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
             include: [
                 {
                     model: Users,
-                    attributes: ['Id', 'Name', 'Salary'],
+                    attributes: ['Id', 'FullName', 'Salary'],
                 },
             ],
         });

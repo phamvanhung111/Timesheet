@@ -1,6 +1,8 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
+const SalaryUser = require('./salaryUser')
+
 class Users extends Model { }
 
 Users.init({
@@ -71,5 +73,8 @@ Users.init({
     tableName: 'Users',
     timestamps: false
 });
+
+Users.hasMany(SalaryUser, { foreignKey: 'UserId' });
+SalaryUser.belongsTo(Users, { foreignKey: 'UserId' });
 
 module.exports = Users;

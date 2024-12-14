@@ -2,14 +2,22 @@ const CheckIn = require('../models/checkIn');
 const CheckOut = require('../models/checkOut'); // Giả sử bạn có model CheckOut tương tự như CheckIn
 const Attendance = require('../models/attendance');
 const Request = require('../models/request')
+const Daily = require('../models/daily')
 const { where } = require('sequelize');
 const createAttendance = async (attendanceData, user_id) => {
     try {
         const { ProjectId, Date: dateFromBody } = attendanceData;
 
         // Get current date or use provided date
-        const attendanceDate = dateFromBody 
+        const attendanceDate = dateFromBody
 
+        const existingAttendance = await Attendance.findOne({
+            where: { UserId: user_id, Date: attendanceDate }
+        });
+
+        if (existingAttendance) {
+            return { status: 400, message: 'Đã tồn tại Attendance trong ngày này' };
+        }
         // Find CheckIn, CheckOut, and Request records for the specified date and user
         const checkInRecord = await CheckIn.findOne({
             where: { UserId: user_id, Date: attendanceDate }
@@ -22,6 +30,13 @@ const createAttendance = async (attendanceData, user_id) => {
         const checkRequest = await Request.findOne({
             where: { UserId: user_id, Date: attendanceDate }
         });
+
+        const dailyRecord = await Daily.findOne({
+            where: { UserId: user_id, Date: Date }
+        });
+        if (!dailyRecord) {
+            return res.status(404).json({ message: 'Daily trước khi log ngày công.' });
+        }
 
         // Assign values or default to null if records are not found
         const checkInValue = checkInRecord ? checkInRecord.CheckIn : null;
@@ -128,11 +143,9 @@ const getAttendancesByMonth = async (year, month) => {
 
 
 
-
-
 module.exports = {
     createAttendance,
-    getAttendancesByMonth 
+    getAttendancesByMonth
 };
 
 

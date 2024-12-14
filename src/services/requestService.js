@@ -12,7 +12,6 @@ const createRequestService = async (data, user_id) => {
     try {
         console.log(user_id);
         const {
-            ProjectId,
             TypeId,
             Reason,
             Hours,
@@ -21,12 +20,23 @@ const createRequestService = async (data, user_id) => {
         if ((TypeId === 1 || TypeId === 2) && Hours > 2.00) {
             return { status: 400, message: 'Tối đa 2 tiếng' };
         }
-        const userProject = await ProjectUser.findOne({
-            where: { UserId: user_id, ProjectId: ProjectId }
-        });
 
         if (!userProject) {
-            throw new Error('Bạn không ở trong project này');
+            throw new Error('Bạn không thuộc bất kỳ project nào');
+        }
+
+        const { ProjectId } = userProject;
+
+        const existingRequest = await Request.findOne({
+            where: {
+                UserId: user_id,
+                ProjectId,
+                Date: requestDate || new Date()
+            }
+        });
+
+        if (existingRequest) {
+            return { status: 400, message: 'Request đã tồn tại trong ngày này' };
         }
 
         const newProject = await Request.create({
