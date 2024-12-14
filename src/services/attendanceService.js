@@ -8,7 +8,7 @@ const createAttendance = async (attendanceData, user_id) => {
         const { ProjectId, Date: dateFromBody } = attendanceData;
 
         // Get current date or use provided date
-        const attendanceDate = dateFromBody ? dateFromBody : new global.Date().toISOString().split('T')[0];
+        const attendanceDate = dateFromBody 
 
         // Find CheckIn, CheckOut, and Request records for the specified date and user
         const checkInRecord = await CheckIn.findOne({
@@ -103,12 +103,36 @@ const createAttendance = async (attendanceData, user_id) => {
     }
 };
 
+const getAttendancesByMonth = async (year, month) => {
+    try {
+        // Tạo ngày bắt đầu và kết thúc của tháng
+        const startDate = new Date(year, month - 1, 1); // Tháng bắt đầu từ 0 trong JavaScript
+        const endDate = new Date(year, month, 0); // Ngày cuối cùng của tháng
+
+        // Tìm tất cả attendance trong tháng này
+        const attendances = await Attendance.findAll({
+            where: {
+                Date: {
+                    [Op.gte]: startDate, // Tìm từ ngày bắt đầu
+                    [Op.lte]: endDate // Đến ngày cuối cùng
+                }
+            }
+        });
+
+        return attendances; // Trả về tất cả attendance trong tháng
+    } catch (error) {
+        console.error('Error fetching attendances:', error);
+        throw error; // Ném lỗi để controller có thể xử lý
+    }
+};
+
 
 
 
 
 module.exports = {
-    createAttendance
+    createAttendance,
+    getAttendancesByMonth 
 };
 
 

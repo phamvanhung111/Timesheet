@@ -6,7 +6,7 @@ const { authUserMiddleware } = require('../middleware/authMiddleware');
 
 router.post('/createCheckIn', authUserMiddleware, checkInController.createCheckIn)
 router.post('/createCheckOut', authUserMiddleware, checkOutController.createCheckOut)
-router.post('/getCheckInUser', authUserMiddleware, checkInController.getCheckInUser)
-router.post('/getCheckOutUser', authUserMiddleware, checkOutController.getCheckOutUser)
+router.get('/getCheckInUser', authUserMiddleware, checkInController.getCheckInUser)
+router.get('/getCheckOutUser', authUserMiddleware, checkOutController.getCheckOutUser)
 router.post('/getWorkingTime', authUserMiddleware, checkInController.getWorkingTime)
 module.exports = router;

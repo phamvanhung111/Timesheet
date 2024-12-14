@@ -1,22 +1,17 @@
-const checkOut = require('../models/checkOut');
 const { generateDateFilter } = require('../config/filterDate');
-const CheckOut = require('../models/checkOut');
-const createCheckOutService = async (data, user_id) => {
+const CheckOut = require('../models/CheckOut');
+const createCheckOutService = async (user_id) => {
     try {
-        const { CheckOut } = data;
-
-        // Lấy thời gian hiện tại
         const currentDate = new Date();
-        const currentTime = currentDate.toTimeString().split(' ')[0];
+        const currentTime = currentDate.toTimeString().split(' ')[0]; // Lấy phần giờ:phút:giây
 
-        const createCheckOut = await checkOut.create({
+        const createCheckOut = await CheckOut.create({
             UserId: user_id,
-            CheckOut: CheckOut,
-            CheckOut: currentTime,
+            CheckOut: currentTime, // Lưu thời gian hiện tại vào trường CheckIn
             Date: currentDate
         });
 
-        return createCheckOut;
+        return currentTime
     } catch (error) {
         console.log(error);
         return { status: "Err", message: error.message };
@@ -37,15 +32,19 @@ const getCheckOutUserService = async (user_id, day, month, year) => {
         if (day && month && year) {
             whereCondition.Date = generateDateFilter(day, month, year);
         }
+        console.log(day, month, year)
 
         // Tìm kiếm bản ghi với điều kiện đã xác định
         const getCheckOutUser = await CheckOut.findAll({
             where: whereCondition
         });
 
-        return getCheckOutUser;
+        return {
+            status: "Success",
+            data: getCheckOutUser,
+        };
     } catch (error) {
-        console.error("Error in getCheckOutUserService:", error);
+        console.error("Error in getCheckInUserService:", error);
         return { status: "Err", message: error.message };
     }
 };

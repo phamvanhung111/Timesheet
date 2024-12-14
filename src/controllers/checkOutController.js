@@ -4,12 +4,14 @@ const checkOutService = require('../services/checkOutService');
 const createCheckOut = async (req, res) => {
     try {
         const user_id = req.user_id
-        const data = req.body
-
-        const response = checkOutService.createCheckOutService(data, user_id)
-
-        return res.status(200).json(response)
+        const response = await checkOutService.createCheckOutService(user_id)
+        console.log("respone", response)
+        return res.status(200).json({
+            status: "Success",
+            data: { checkOut: response },
+        });
     } catch (e) {
+        console.log(e)
         return res.status(404).json({
             status: "Err",
             message: e
@@ -20,7 +22,7 @@ const createCheckOut = async (req, res) => {
 const getCheckOutUser = async (req, res) => {
     try {
         const user_id = req.user_id
-        const { day, month, year } = req.body
+        const { day, month, year } = req.query
 
         console.log("Request Outfo:", { user_id });
         const response = await checkOutService.getCheckOutUserService(user_id, day, month, year)

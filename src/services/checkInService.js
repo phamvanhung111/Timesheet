@@ -4,22 +4,18 @@ const CheckOut = require('../models/CheckOut');
 const { Op } = require('sequelize');
 const moment = require('moment');
 
-const createCheckInService = async (data, user_id) => {
+const createCheckInService = async (user_id) => {
     try {
-        const { CheckIn } = data;
-
-        // Lấy thời gian hiện tại
         const currentDate = new Date();
         const currentTime = currentDate.toTimeString().split(' ')[0]; // Lấy phần giờ:phút:giây
 
         const createCheckIn = await CheckIn.create({
             UserId: user_id,
-            CheckOut: CheckIn,
             CheckIn: currentTime, // Lưu thời gian hiện tại vào trường CheckIn
             Date: currentDate
         });
 
-        return createCheckIn;
+        return currentTime
     } catch (error) {
         console.log(error);
         return { status: "Err", message: error.message };
@@ -41,11 +37,14 @@ const getCheckInUserService = async (user_id, day, month, year) => {
         }
 
         // Tìm kiếm bản ghi với điều kiện đã xác định
-        const getCheckInUser = await checkIn.findAll({
+        const getCheckInUser = await CheckIn.findAll({
             where: whereCondition
         });
 
-        return getCheckInUser;
+        return {
+            status: "Success",
+            data: getCheckInUser,
+        };
     } catch (error) {
         console.error("Error in getCheckInUserService:", error);
         return { status: "Err", message: error.message };
