@@ -8,7 +8,7 @@ const createCheckIn = async (req, res) => {
         console.log("respone", response)
         return res.status(200).json({
             status: "Success",
-            data: { checkOut: response },
+            data: { checkIn: response },
         });
     } catch (e) {
         console.log(e)

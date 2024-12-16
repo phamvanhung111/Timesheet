@@ -20,7 +20,11 @@ const createRequestService = async (data, user_id) => {
         if ((TypeId === 1 || TypeId === 2) && Hours > 2.00) {
             return { status: 400, message: 'Tối đa 2 tiếng' };
         }
-
+        const userProject = await ProjectUser.findOne({
+            where: {
+                UserId: user_id
+            }
+        })
         if (!userProject) {
             throw new Error('Bạn không thuộc bất kỳ project nào');
         }
@@ -41,7 +45,7 @@ const createRequestService = async (data, user_id) => {
 
         const newProject = await Request.create({
             UserId: user_id,
-            ProjectId,
+            ProjectId: ProjectId,
             Type: TypeId,
             Reason,
             CreatedAt: new Date(),

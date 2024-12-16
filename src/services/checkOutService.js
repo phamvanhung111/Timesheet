@@ -1,22 +1,44 @@
 const { generateDateFilter } = require('../config/filterDate');
 const CheckOut = require('../models/checkOut');
+const { Op } = require('sequelize');
 const createCheckOutService = async (user_id) => {
     try {
+        // Lấy ngày hiện tại (không bao gồm giờ, phút, giây)
         const currentDate = new Date();
-        const currentTime = currentDate.toTimeString().split(' ')[0];
+        const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0)); // Đầu ngày
+        const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999)); // Cuối ngày
 
-        const createCheckOut = await CheckOut.create({
-            UserId: user_id,
-            CheckOut: currentTime, // Lưu thời gian hiện tại vào trường CheckIn
-            Date: currentDate
+        // Kiểm tra xem đã tồn tại bản ghi CheckOut trong ngày chưa
+        const existingCheckOut = await CheckOut.findOne({
+            where: {
+                UserId: user_id,
+                Date: {
+                    [Op.between]: [startOfDay, endOfDay], // Kiểm tra trong khoảng ngày
+                },
+            },
         });
 
-        return currentTime
+        if (existingCheckOut) {
+            return { status: "Err", message: "CheckOut đã được tạo trong ngày hôm nay." };
+        }
+
+        // Lấy thời gian hiện tại
+        const currentTime = new Date().toTimeString().split(' ')[0];
+
+        // Tạo CheckOut mới
+        const createCheckOut = await CheckOut.create({
+            UserId: user_id,
+            CheckOut: currentTime, // Lưu thời gian hiện tại vào trường CheckOut
+            Date: new Date(),
+        });
+
+        return { status: "Success", data: createCheckOut };
     } catch (error) {
         console.log(error);
         return { status: "Err", message: error.message };
     }
-}
+};
+
 
 
 const getCheckOutUserService = async (user_id, day, month, year) => {

@@ -14,7 +14,8 @@ const Attendance = require('./attendance');
 
 const syncDatabase = async () => {
     try {
-        await sequelize.sync({ alter: true });
+        // await sequelize.sync({ force: true });
+        // await sequelize.sync({ alter: true });
         console.log('Đã cập nhật cấu trúc bảng thành công!');
     } catch (error) {
         console.error('Lỗi khi cập nhật bảng:', error);
