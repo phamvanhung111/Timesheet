@@ -7,22 +7,7 @@ const createCheckInService = async (user_id) => {
     try {
 
         const currentDate = new Date();
-        const startOfDay = new Date(currentDate.setHours(0, 0, 0, 0)); // Đầu ngày
-        const endOfDay = new Date(currentDate.setHours(23, 59, 59, 999)); // Cuối ngày
-
         // Kiểm tra xem đã tồn tại bản ghi CheckOut trong ngày chưa
-        const existingCheckIn = await CheckIn.findOne({
-            where: {
-                UserId: user_id,
-                Date: {
-                    [Op.between]: [startOfDay, endOfDay], // Kiểm tra trong khoảng ngày
-                },
-            },
-        });
-
-        if (existingCheckIn) {
-            return { status: "Err", message: "CheckIn đã được tạo trong ngày hôm nay." };
-        }
         const currentTime = currentDate.toTimeString().split(' ')[0]
 
         const createCheckIn = await CheckIn.create({

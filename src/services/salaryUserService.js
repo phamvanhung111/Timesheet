@@ -59,18 +59,19 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
         const currentMonth = currentDate.getMonth() + 1; // Tháng bắt đầu từ 0
         const currentYear = currentDate.getFullYear();
 
-        // Kiểm tra nếu nhập tháng hiện tại hoặc tháng trong tương lai
-        if (
-            parseInt(year, 10) > currentYear ||
-            (parseInt(year, 10) === currentYear && parseInt(month, 10) >= currentMonth)
-        ) {
-            throw new Error(
-                `Invalid input: Only salaries for previous months can be processed. Current month is ${currentMonth}/${currentYear}.`
-            );
-        }
+        // // Kiểm tra nếu nhập tháng hiện tại hoặc tháng trong tương lai
+        // if (
+        //     parseInt(year, 10) > currentYear ||
+        //     (parseInt(year, 10) === currentYear && parseInt(month, 10) >= currentMonth)
+        // ) {
+        //     throw new Error(
+        //         `Invalid input: Only salaries for previous months can be processed. Current month is ${currentMonth}/${currentYear}.`
+        //     );
+        // }
 
         const Time = `${year}-${month.toString().padStart(2, '0')}`;
-
+        const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+        const endDate = `${year}-${month.toString().padStart(2, '0')}-31`;
 
         const existingSalaries = await SalaryUser.findAll({
             where: { Time },
@@ -90,7 +91,6 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
             };
         }
 
-
         const users = await Users.findAll({
             attributes: ['Id', 'Salary'],
         });
@@ -100,23 +100,20 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
         }
 
         const DayOfMonth = calculateWorkingDays(year, month);
+
         const salaryResults = [];
 
         for (const user of users) {
+
             const UserId = user.Id;
             const baseSalary = parseFloat(user.Salary) || 0;
-
-            // Tính số ngày nghỉ phép (DayOff)
-            const DayOff = await calculateDayOff(UserId, year, month);
-
-            // Tính số ngày làm việc thực tế
-            const DayReal = DayOfMonth - DayOff;
-
-            // Truy vấn tổng FeeMoney từ bảng Attendance
             const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
             const endDate = `${year}-${month.toString().padStart(2, '0')}-31`;
+            // Tính số ngày nghỉ phép (DayOff)
+            const DayOff = await calculateDayOff(UserId, year, month);
+            // Tính số ngày làm việc thực tế
 
-            const totalFee = await Attendance.sum('FeeMoney', {
+            const attendanceCount = await Attendance.count({
                 where: {
                     UserId,
                     Date: {
@@ -125,8 +122,22 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
                 },
             });
 
+
+            // Truy vấn tổng FeeMoney từ bảng Attendance
+
+
+            const Fee = await Attendance.sum('FeeMoney', {
+                where: {
+                    UserId,
+                    Date: {
+                        [Op.between]: [startDate, endDate],
+                    },
+                },
+            });
+            const DayReal = DayOfMonth - DayOff - attendanceCount;
+            const totalFee = Fee + DayReal * 100000
             // Tính SalaryReal (lương thực nhận)
-            const SalaryReal = (baseSalary * DayReal) / DayOfMonth - (totalFee || 0);
+            const SalaryReal = (baseSalary * attendanceCount) / DayOfMonth - (totalFee || 0);
 
             // Tạo bản ghi SalaryUser với các giá trị tính toán
             const newSalaryUser = await SalaryUser.create({
