@@ -10,4 +10,5 @@ router.post('/removeUsersToProject', authMiddleware, projectController.removeUse
 router.put('/updateProject/:Id', authMiddleware, projectController.updateProject)
 router.post('/searchProjectByName', authMiddleware, projectController.searchProjectByName)
 router.get('/getProjectByUserId', authUserMiddleware, projectController.getProjectByUserId)
+router.get('/getProjectByProjectId/:Id', authMiddleware, projectController.getProjectByProjectId)
 module.exports = router;

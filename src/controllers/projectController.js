@@ -33,6 +33,7 @@ const getAllProject = async (req, res) => {
 const searchProjectByName = async (req, res) => {
     try {
         const { name } = req.body; 
+        console.log('name', name)
         const projects = await projectService.searchProjectByNameService(name);
         return res.status(200).json({
             status: 'Success',
@@ -53,6 +54,22 @@ const getProjectByUserId = async (req, res) => {
         return res.status(200).json({
             status: 'Success',
             data: userProjects
+        });
+    } catch (e) {
+        return res.status(404).json({
+            status: 'Err',
+            message: e.message
+        });
+    }
+};
+
+const getProjectByProjectId = async (req, res) => {
+    try {
+        const projectId = req.params.Id;
+        const project = await projectService.getProjectByProjectIdService(projectId);
+        return res.status(200).json({
+            status: 'Success',
+            data: project[0]
         });
     } catch (e) {
         return res.status(404).json({
@@ -133,5 +150,6 @@ module.exports = {
     removeUsersFromProject,
     updateProject,
     searchProjectByName,
-    getProjectByUserId
+    getProjectByUserId,
+    getProjectByProjectId
 }

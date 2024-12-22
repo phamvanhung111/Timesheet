@@ -144,12 +144,12 @@ const updateProjectById = async (Id, data) => {
         const {
             ClientName,
             Description,
-            PM
+            ProjectName
         } = data;
         const updateProject = await Projects.update({
             ClientName,
             Description,
-            PM
+            ProjectName
         }, {
             where: { Id: Id }
         });
@@ -218,6 +218,26 @@ const getProjectByUserIdService = async (userId) => {
     }
 };
 
+const getProjectByProjectIdService = async (projectId) => {
+    try {
+        const projectIdInt = parseInt(projectId, 10); // Ép kiểu userId thành số nguyên
+
+        if (isNaN(projectIdInt)) {
+            throw new Error('Invalid user ID format');
+        }
+
+        const project = await Projects.findAll({
+            where: {
+                id: projectIdInt
+            }
+        });
+
+        return project;
+    } catch (error) {
+        throw new Error(error.message || 'Error retrieving projects by user ID.');
+    }
+};
+
 module.exports = {
     createProjectService,
     getAllProjectService,
@@ -225,5 +245,6 @@ module.exports = {
     removeUsersFromProjectService,
     updateProjectById,
     searchProjectByNameService,
-    getProjectByUserIdService
+    getProjectByUserIdService,
+    getProjectByProjectIdService 
 }

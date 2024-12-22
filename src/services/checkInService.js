@@ -1,4 +1,5 @@
 const CheckIn = require('../models/checkIn');
+const CheckOut = require('../models/checkOut');
 const { generateDateFilter } = require('../config/filterDate');
 const { Op } = require('sequelize');
 const moment = require('moment');
