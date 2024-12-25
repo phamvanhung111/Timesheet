@@ -9,7 +9,6 @@ const createSalaryUser = async (req, res) => {
         }
         // Gọi service để tạo SalaryUser
         const newSalaryUser = await createOrFetchSalaryForMonthService(year, month);
-
         // Trả về kết quả
         return res.status(201).json({
             message: 'SalaryUser created successfully',

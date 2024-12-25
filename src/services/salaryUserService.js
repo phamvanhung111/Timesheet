@@ -84,11 +84,7 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
         });
 
         if (existingSalaries.length > 0) {
-
-            return {
-                message: `Salaries for ${Time} already exist.`,
-                data: existingSalaries,
-            };
+            return existingSalaries
         }
 
         const users = await Users.findAll({
@@ -150,12 +146,10 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
             });
 
             salaryResults.push(newSalaryUser);
+            
         }
 
-        return {
-            message: `Salaries for ${Time} created successfully.`,
-            data: salaryResults,
-        };
+        return salaryResults
     } catch (error) {
         throw new Error(error.message || 'Failed to create or fetch SalaryUser');
     }
