@@ -68,11 +68,14 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
         //         `Invalid input: Only salaries for previous months can be processed. Current month is ${currentMonth}/${currentYear}.`
         //     );
         // }
-
         const Time = `${year}-${month.toString().padStart(2, '0')}`;
         const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
         const endDate = `${year}-${month.toString().padStart(2, '0')}-31`;
 
+        const users = await Users.findAll({
+            attributes: ['Id', 'Salary', 'Email', 'FullName'],
+        });
+        
         const existingSalaries = await SalaryUser.findAll({
             where: { Time },
             include: [
@@ -82,14 +85,30 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
                 },
             ],
         });
-
+        
         if (existingSalaries.length > 0) {
-            return existingSalaries
+            const result = existingSalaries.map(salary => {
+                // Tìm user trong mảng users dựa trên Id của salary
+                const user = users.find(u => u.Id === salary.UserId); // Điều này giả định rằng `UserId` là trường liên kết giữa `SalaryUser` và `Users`
+                
+                if (!user) {
+                    return null; // Nếu không tìm thấy user, bỏ qua đối tượng này
+                }
+        
+                // Tạo đối tượng tmp mới với dữ liệu mong muốn
+                const tmp = {
+                    Email: user.Email,
+                    FullName: user.FullName,
+                    SalaryReal: salary.SalaryReal, // Lấy giá trị SalaryReal từ SalaryUser
+                    Fee: salary.totalFee || 0,    // Tổng phí (đảm bảo có giá trị mặc định là 0 nếu không có)
+                    DayReal: salary.DayReal,      // Ngày thực tế
+                };
+        
+                return tmp;
+            }).filter(item => item !== null); // Lọc bỏ các phần tử null nếu không tìm thấy user
+        
+            return result;
         }
-
-        const users = await Users.findAll({
-            attributes: ['Id', 'Salary'],
-        });
 
         if (!users || users.length === 0) {
             throw new Error('No users found in the database');
@@ -102,6 +121,8 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
         for (const user of users) {
 
             const UserId = user.Id;
+            const Email = user.Email;
+            const FullName = user.FullName;
             const baseSalary = parseFloat(user.Salary) || 0;
             const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
             const endDate = `${year}-${month.toString().padStart(2, '0')}-31`;
@@ -145,7 +166,15 @@ const createOrFetchSalaryForMonthService = async (year, month) => {
                 Time,
             });
 
-            salaryResults.push(newSalaryUser);
+            tmp = {
+                Email,
+                FullName,
+                SalaryReal,
+                Fee: totalFee || 0,
+                DayReal
+            }
+
+            salaryResults.push(tmp);
             
         }
 
