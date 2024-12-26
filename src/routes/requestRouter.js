@@ -10,4 +10,5 @@ router.put('/approvelRequest/:Id', authMiddleware, requestController.approvelReq
 router.put('/updateRequest/:requestId', authUserMiddleware, requestController.updateHourandType)
 router.get('/getAllRequestByProject/:ProjectId', authMiddleware, requestController.getAllRequestByProject)
 router.get('/getAllRequestByUser/:UserId', authUserMiddleware, requestController.getAllRequestByUser)
+router.get('/getAllRequestByPM', authMiddleware, requestController.getAllRequestByPM)
 module.exports = router;

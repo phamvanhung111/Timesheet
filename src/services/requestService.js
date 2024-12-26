@@ -4,8 +4,10 @@ const Request = require('../models/request');
 const RequestType = require('../models/requestType')
 const { generateCreateAtFilter } = require('../config/filterDate');
 const { parse } = require('dotenv');
+const Projects = require('../models/projects')
 const Attendance = require('../models/attendance');
-const { Op } = require('sequelize');
+const { Op, Sequelize  } = require('sequelize');
+const Users = require('../models/users');
 
 const moment = require('moment')
 const createRequestService = async (data, user_id) => {
@@ -117,7 +119,7 @@ const approvelRequestService = async (requestId, Status) => {
             where: { Id: requestId }
         });
         if (!oldRequest) {
-            return { status: 404, message: 'Không tìm thấy yêu cầu' };
+            return { message: 'Không tìm thấy yêu cầu' };
         }
 
         const [rowsUpdated, updatedRequest] = await Request.update(
@@ -129,50 +131,10 @@ const approvelRequestService = async (requestId, Status) => {
         );
 
         if (rowsUpdated === 0) {
-            return { status: 400, message: 'Trạng thái yêu cầu không được cập nhật' };
+            return { message: 'Trạng thái yêu cầu không được cập nhật' };
         }
 
-        const attendanceRecord = await Attendance.findOne({
-            where: { RequestId: requestId }
-        });
-        if (!attendanceRecord) {
-            return { status: 404, message: 'Không tìm thấy bản ghi điểm danh' };
-        }
-
-        if (Status === 'Approved' && oldRequest.Status === 'Pending') {
-            const { CheckIn, CheckOut } = attendanceRecord;
-            const { Type, Hours } = oldRequest;
-
-            const lateMinutes = CheckIn > '08:30:00'
-                ? (timeToMinutes(CheckIn) - timeToMinutes('08:30:00')) - (Type === 1 || Type === 3 ? Hours * 60 : 0)
-                : 0;
-
-            const earlyLeaveMinutes = CheckOut < '17:30:00'
-                ? (timeToMinutes(CheckOut) - timeToMinutes('17:30:00')) + (Type === 2 || Type === 4 ? Hours * 60 : 0)
-                : 0;
-
-            const workingHours = (timeToMinutes(CheckOut) - timeToMinutes(CheckIn)) / 60 - 1;
-
-            let feeMoney = 0;
-            if (!CheckIn && !CheckOut) {
-                feeMoney = 100000;
-            } else if (!CheckIn || !CheckOut) {
-                feeMoney = 3000;
-            } else if (lateMinutes > 0 || earlyLeaveMinutes > 0) {
-                feeMoney = 50000;
-            }
-
-            await Attendance.update({
-                LateMinutes: lateMinutes,
-                EarlyLeaveMinutes: earlyLeaveMinutes,
-                WorkingHours: workingHours,
-                FeeMoney: feeMoney
-            }, {
-                where: { RequestId: requestId }
-            });
-        }
-
-        return { status: 200, message: 'Yêu cầu đã được cập nhật thành công', updatedRequest };
+        return { message: 'Yêu cầu đã được cập nhật thành công' };
     } catch (error) {
         console.error(error);
         return { status: 500, message: 'Đã xảy ra lỗi', error };
@@ -208,6 +170,67 @@ const getAllRequestByProjectService = async (ProjectId, startDate, endDate) => {
         };
     }
 };
+
+const getAllRequestByPMService = async (user_id, status) => {
+    try {
+        const projects = await Projects.findAll({
+            where: {
+                PM: user_id
+            }
+        });
+
+        if (!projects || projects.length === 0) {
+            return [];
+        }
+
+        const getAllRequestType = await RequestType.findAll({
+            attributes: ['Id', 'TypeName']
+        });
+
+        const users = await Users.findAll({
+            attributes: ['Id', 'FullName']
+        });
+
+        const projectIds = projects.map(project => project.Id);
+
+        // Điều kiện lọc dựa trên status
+        const whereClause = {
+            ProjectId: {
+                [Sequelize.Op.in]: projectIds, 
+            },
+        };
+
+        if (status) {
+            whereClause.Status = status; // Thêm điều kiện status nếu tồn tại
+        }
+        console.log(whereClause);
+
+        const getAllRequestProject = await Request.findAll({
+            where: whereClause,
+        });
+        const userMap = new Map(users.map(user => [user.Id, user.FullName]));
+        const requestTypeMap = new Map(getAllRequestType.map(type => [type.Id, type.TypeName]));
+
+        const result = getAllRequestProject.map(request => ({
+            FullName: userMap.get(request.UserId) || 'Unknown', // Lấy FullName từ userMap
+            TypeName: requestTypeMap.get(request.Type) || 'Unknown', // Lấy TypeName từ requestTypeMap
+            Reason: request.Reason,
+            CreatedAt: request.CreatedAt,
+            Hours: request.Hours,
+            Date: request.Date,
+            Status: request.Status,
+            Id: request.Id
+          }));
+          
+        return result;
+    } catch (error) {
+        return {
+            status: 'Err',
+            message: error.message,
+        };
+    }
+};
+
 
 
 const getAllRequestByUserService = async (userid, role, UserId, startDate, endDate) => {
@@ -265,5 +288,6 @@ module.exports = {
     approvelRequestService,
     getAllRequestByProjectService,
     getAllRequestByUserService,
-    updateRequestService
+    updateRequestService,
+    getAllRequestByPMService
 }

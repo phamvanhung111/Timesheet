@@ -1,3 +1,4 @@
+const { use } = require('../routes/requestRouter');
 const requsetService = require('../services/requestService')
 
 const createRequest = async (req, res) => {
@@ -40,18 +41,6 @@ const approvelRequest = async (req, res) => {
         const { Status } = req.body;
 
         const result = await requsetService.approvelRequestService(requestId, Status);
-
-        if (result.status === 404) {
-            return res.status(404).json({
-                status: 'Error',
-                message: result.message
-            });
-        } else if (result.status === 500) {
-            return res.status(500).json({
-                status: 'Error',
-                message: result.message
-            });
-        }
 
         return res.status(200).json({
             status: 'Success',
@@ -119,6 +108,25 @@ const getAllRequestByProject = async (req, res) => {
         })
     }
 }
+
+const getAllRequestByPM = async (req, res) => {
+    try {
+        const user_id = req.user_id;
+        const status = req.query.status; 
+        const response = await requsetService.getAllRequestByPMService(user_id, status);
+        return res.status(200).json({
+            status: 'Success',
+            data: response
+        });
+    } catch (error) {
+        return res.status(404).json({
+            status: "Err",
+            message: error.message // Thay thế e bằng error.message
+        });
+    }
+};
+
+
 const getAllRequestByUser = async (req, res) => {
     try {
         const userid = req.user_id;
@@ -151,5 +159,6 @@ module.exports = {
     approvelRequest,
     getAllRequestByProject,
     getAllRequestByUser,
-    updateHourandType
+    updateHourandType,
+    getAllRequestByPM
 }
