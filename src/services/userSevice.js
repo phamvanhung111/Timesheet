@@ -1,9 +1,11 @@
 const Users = require('../models/users');
-const Accounts = require('../models/account')
-const Roles = require('../models/roles')
+const Accounts = require('../models/account');
+const Roles = require('../models/roles');
 const bcrypt = require('bcrypt');
+const ProjectUser = require('../models/projectUser');
 const { refreshToken, accessToken } = require('./jwtService');
 const sequelize = require('../config/database')
+const { Op } = require('sequelize');
 const createUserService = async (data) => {
     const transaction = await sequelize.transaction();
     try {
@@ -113,6 +115,59 @@ const getAllUsersService = async () => {
     try {
         const users = await Users.findAll(); // Lấy tất cả người dùng từ cơ sở dữ liệu
         return users;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+const getAllUserInProjectService = async (projectId) => {
+    try {
+        const projectUsers = await ProjectUser.findAll({
+            attributes: ['UserId'],
+            where: { ProjectId: projectId }
+        });
+
+        // Lấy danh sách UserId từ kết quả
+        const userIdsInProject = projectUsers.map(user => user.UserId);
+
+        // Bước 2: Lấy FullName và Id của Users có UserId trong danh sách vừa tìm được
+        const users = await Users.findAll({
+            attributes: ['Id', 'FullName'],
+            where: {
+                Id: userIdsInProject // Lọc theo danh sách UserId
+            }
+        });
+
+        return users;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+const getAllUserNotInProjectService = async (projectId) => {
+    try {
+        // Lấy tất cả UserId trong bảng ProjectUser cho ProjectId truyền vào
+        const projectUsers = await ProjectUser.findAll({
+            attributes: ['UserId'],
+            where: { ProjectId: projectId }
+        });
+
+        // Lấy danh sách UserId từ kết quả
+        const userIdsInProject = projectUsers.map(user => user.UserId);
+
+        // Bước 2: Lấy FullName và Id của Users không có trong danh sách UserId
+        const usersNotInProject = await Users.findAll({
+            attributes: ['Id', 'FullName'],
+            where: {
+                Id: {
+                    [Op.notIn]: userIdsInProject // Lọc người dùng không có trong danh sách UserId của dự án
+                }
+            }
+        });
+
+        console.log('Users not in project:', usersNotInProject);
+
+        return usersNotInProject;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -233,5 +288,7 @@ module.exports = {
     gettAllRoleService,
     getUserInfoById,
     updateUserById,
-    getUserInfoByEmailService
+    getUserInfoByEmailService,
+    getAllUserNotInProjectService,
+    getAllUserInProjectService 
 };
