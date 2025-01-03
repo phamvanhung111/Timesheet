@@ -2,6 +2,7 @@ const CheckIn = require('../models/checkIn');
 const CheckOut = require('../models/checkOut'); // Giả sử bạn có model CheckOut tương tự như CheckIn
 const Attendance = require('../models/attendance');
 const Request = require('../models/request')
+const { Op } = require('sequelize');
 const Daily = require('../models/daily')
 const { where } = require('sequelize');
 // const createAttendance = async (attendanceData, user_id) => {
