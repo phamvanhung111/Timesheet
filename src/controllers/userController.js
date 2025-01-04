@@ -1,5 +1,4 @@
 const userService = require('../services/userSevice');
-const roleService = require('../services/roleService');
 const createUser = async (req, res) => {
     try {
         const { FullName, email, password, confirmPassword } = req.body;
@@ -234,7 +233,7 @@ const updateUser = async (req, res) => {
 const createRole = async (req, res) => {
     try {
         const createRole = req.body;
-        const response = await roleService.createRoleService(createRole)
+        const response = await userService.createRoleService(createRole)
         return res.status(200).json(response)
     }
     catch (e) {
@@ -242,6 +241,41 @@ const createRole = async (req, res) => {
             status: "Err",
             message: e
         })
+    }
+}
+
+const updateRole = async (req, res) => {
+    try {
+        const roleId = req.params.Id
+        const data = req.body
+        const roleUpdate = await userService.updateRoleService(roleId, data);
+
+        return res.status(200).json({
+            status: 'Success',
+            data: roleUpdate
+        });
+
+    } catch (e) {
+        return res.status(404).json({
+            status: "Err",
+            message: e
+        })
+    }
+}
+
+const getRoleByRoleId = async (req, res) => {
+    try {
+        const roleId = req.params.Id
+        const role = await userService.getRoleByRoleIdService(roleId);
+        return res.status(200).json({
+            status: 'Success',
+            data: role
+        });
+    } catch (e) {
+        return res.status(404).json({
+            status: 'Err',
+            message: e.message
+        });
     }
 }
 
@@ -258,6 +292,8 @@ module.exports = {
     createRole,
 
     getAllUserNotInProject,
-    getAllUserInProject
+    getAllUserInProject,
+    updateRole,
+    getRoleByRoleId
 
 };

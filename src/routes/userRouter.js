@@ -16,5 +16,7 @@ router.post('/createRole', authMiddleware, userController.createRole)
 
 router.get('/getAllUserNotInProject/:Id', authMiddleware, userController.getAllUserNotInProject);
 router.get('/getAllUserInProject/:Id', authMiddleware, userController.getAllUserInProject);
+router.put('/updateRole/:Id', authMiddleware, userController.updateRole);
 
+router.get('/getRoleByRoleId/:Id', authMiddleware, userController.getRoleByRoleId)
 module.exports = router;

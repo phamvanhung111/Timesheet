@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const ProjectUser = require('../models/projectUser');
 const { refreshToken, accessToken } = require('./jwtService');
 const sequelize = require('../config/database')
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const os = require('os');
 
 const getLocalIp = () => {
@@ -104,7 +104,7 @@ const loginUserService = async (data) => {
 
         const localIp = getLocalIp();
         console.log(localIp);
-        if (localIp !== '192.168.1.29') {
+        if (localIp !== '172.23.96.1') {
             return { status: 'Err', message: 'Unauthorized IP address' };
         }
 
@@ -299,6 +299,10 @@ const createRoleService = async (createRole) => {
     try {
         const { RoleName } = createRole;
         console.log(createRole);
+        const exsitingRole = await Roles.findOne({
+            where: { RoleName: RoleName }
+        })
+        if (exsitingRole) { return { status: 'Err', message: 'Role này đã được đăng ký' }; }
         const newRole = await Roles.create({
             RoleName
         })
@@ -314,6 +318,48 @@ const createRoleService = async (createRole) => {
     }
 }
 
+const updateRoleService = async (roleId, data) => {
+    try {
+        const { RoleName } = data
+        const RoleId = await Roles.findOne({ where: { Id: roleId } });
+        if (RoleId === null) {
+            return { status: 'Err', message: 'Role not define' };
+        }
+        const updateRole = await Roles.update({
+            RoleName: RoleName
+        }, {
+            where: { Id: roleId }
+        })
+            ;
+        if (updateRole) {
+            return {
+                status: "Success",
+                message: "Update thành công",
+            };
+        }
+    } catch (e) {
+        return res.status(404).json({
+            status: "Err",
+            message: e
+        })
+    }
+}
+
+const getRoleByRoleIdService = async (roleId) => {
+    try {
+        const role = await Roles.findOne({
+            where: {
+                Id: roleId
+            }
+        });
+        if (!role) {
+            throw new Error('Role not found');
+        }
+        return role;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
 
 
 
@@ -329,6 +375,8 @@ module.exports = {
     createRoleService,
 
     getAllUserNotInProjectService,
-    getAllUserInProjectService
+    getAllUserInProjectService,
+    updateRoleService,
+    getRoleByRoleIdService
 
 };
