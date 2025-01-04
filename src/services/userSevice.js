@@ -6,6 +6,20 @@ const ProjectUser = require('../models/projectUser');
 const { refreshToken, accessToken } = require('./jwtService');
 const sequelize = require('../config/database')
 const { Op } = require('sequelize');
+const os = require('os');
+
+const getLocalIp = () => {
+    const networkInterfaces = os.networkInterfaces();
+    for (const interfaceName in networkInterfaces) {
+        for (const network of networkInterfaces[interfaceName]) {
+            if (network.family === 'IPv4' && !network.internal) {
+                return network.address;
+            }
+        }
+    }
+    return null;
+};
+
 const createUserService = async (data) => {
     const transaction = await sequelize.transaction();
     try {
@@ -87,8 +101,15 @@ const loginUserService = async (data) => {
         if (!isPasswordValid) {
             return { status: 'Err', message: 'Email or password is incorrect' };
         }
-        const user = await Users.findOne({ where: { Account: account.Id } })
-        console.log(user.Id)
+
+        const localIp = getLocalIp();
+        console.log(localIp);
+        if (localIp !== '192.168.1.29') {
+            return { status: 'Err', message: 'Unauthorized IP address' };
+        }
+
+        const user = await Users.findOne({ where: { Account: account.Id } });
+        console.log(user.Id);
         const access_token = await accessToken({
             id: user.Id,
             email: user.Email,
@@ -100,7 +121,7 @@ const loginUserService = async (data) => {
             role: user.Role
         });
 
-        return { status: 'Success', accessToken: access_token, refreshToken: refresh_token, account };
+        return { status: 'Success', message: "login successful", accessToken: access_token, refreshToken: refresh_token, account };
     } catch (error) {
         throw new Error(error.message);
     }
