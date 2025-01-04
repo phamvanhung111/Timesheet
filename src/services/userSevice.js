@@ -295,6 +295,24 @@ const updateUserById = async (Id, data, user_id, role) => {
         throw new Error(error.message);
     }
 };
+const createRoleService = async (createRole) => {
+    try {
+        const { RoleName } = createRole;
+        console.log(createRole);
+        const newRole = await Roles.create({
+            RoleName
+        })
+        if (newRole) {
+            return {
+                status: "Success",
+                message: "Tạo thành công",
+                data: newRole
+            }
+        }
+    } catch (e) {
+        return { status: "Err", message: e.message };
+    }
+}
 
 
 
@@ -307,6 +325,10 @@ module.exports = {
     getUserInfoById,
     updateUserById,
     getUserInfoByEmailService,
+
+    createRoleService
+
     getAllUserNotInProjectService,
     getAllUserInProjectService 
+
 };
