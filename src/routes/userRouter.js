@@ -11,4 +11,5 @@ router.get('/getAllRoles', authMiddleware, userController.getAllRoles);
 router.get('/getInfo/:Id', authUserMiddleware, userController.getUserInfo);
 router.put('/updateUser/:Id', authUserMiddleware, userController.updateUser);
 router.post('/getUserByEmail', authMiddleware, userController.getUserInfoByEmail);
+router.post('/createRole', authMiddleware, userController.createRole)
 module.exports = router;

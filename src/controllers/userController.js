@@ -1,5 +1,5 @@
 const userService = require('../services/userSevice');
-
+const roleService = require('../services/roleService');
 const createUser = async (req, res) => {
     try {
         const { FullName, email, password, confirmPassword } = req.body;
@@ -179,6 +179,21 @@ const updateUser = async (req, res) => {
     }
 }
 
+
+const createRole = async (req, res) => {
+    try {
+        const createRole = req.body;
+        const response = await roleService.createRoleService(createRole)
+        return res.status(200).json(response)
+    }
+    catch (e) {
+        return res.status(404).json({
+            status: "Err",
+            message: e
+        })
+    }
+}
+
 module.exports = {
     createUser,
     LoginUser,
@@ -187,5 +202,6 @@ module.exports = {
     getAllRoles,
     getUserInfo,
     updateUser,
-    getUserInfoByEmail
+    getUserInfoByEmail,
+    createRole
 };
