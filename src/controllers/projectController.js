@@ -80,7 +80,8 @@ const getProjectByProjectId = async (req, res) => {
 };
 
 const addUsersToProject = async (req, res) => {
-    const { projectId, userIds } = req.body;
+    const { projectId, userId } = req.body;
+    const userIds = [userId];
     if (!projectId || !Array.isArray(userIds) || userIds.length === 0) {
         return res.status(400).json({ success: false, message: 'Invalid projectId or user list.' });
     }
@@ -98,7 +99,8 @@ const addUsersToProject = async (req, res) => {
     }
 };
 const removeUsersFromProject = async (req, res) => {
-    const { projectId, userIds } = req.body;
+    const { projectId, userId } = req.body;
+    const userIds = [userId]
 
     if (!projectId || !Array.isArray(userIds) || userIds.length === 0) {
         return res.status(400).json({ success: false, message: 'Invalid projectId or user list.' });

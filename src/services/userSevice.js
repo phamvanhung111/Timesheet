@@ -1,9 +1,25 @@
 const Users = require('../models/users');
-const Accounts = require('../models/account')
-const Roles = require('../models/roles')
+const Accounts = require('../models/account');
+const Roles = require('../models/roles');
 const bcrypt = require('bcrypt');
+const ProjectUser = require('../models/projectUser');
 const { refreshToken, accessToken } = require('./jwtService');
 const sequelize = require('../config/database')
+const { Op } = require('sequelize');
+const os = require('os');
+
+const getLocalIp = () => {
+    const networkInterfaces = os.networkInterfaces();
+    for (const interfaceName in networkInterfaces) {
+        for (const network of networkInterfaces[interfaceName]) {
+            if (network.family === 'IPv4' && !network.internal) {
+                return network.address;
+            }
+        }
+    }
+    return null;
+};
+
 const createUserService = async (data) => {
     const transaction = await sequelize.transaction();
     try {
@@ -73,11 +89,6 @@ const createUserService = async (data) => {
     }
 };
 
-
-
-
-
-
 const loginUserService = async (data) => {
     try {
         const { username, password } = data;
@@ -90,8 +101,15 @@ const loginUserService = async (data) => {
         if (!isPasswordValid) {
             return { status: 'Err', message: 'Email or password is incorrect' };
         }
-        const user = await Users.findOne({ where: { Account: account.Id } })
-        console.log(user.Id)
+
+        const localIp = getLocalIp();
+        console.log(localIp);
+        if (localIp !== '192.168.1.29') {
+            return { status: 'Err', message: 'Unauthorized IP address' };
+        }
+
+        const user = await Users.findOne({ where: { Account: account.Id } });
+        console.log(user.Id);
         const access_token = await accessToken({
             id: user.Id,
             email: user.Email,
@@ -103,7 +121,7 @@ const loginUserService = async (data) => {
             role: user.Role
         });
 
-        return { status: 'Success', accessToken: access_token, refreshToken: refresh_token, account };
+        return { status: 'Success', message: "login successful", accessToken: access_token, refreshToken: refresh_token, account };
     } catch (error) {
         throw new Error(error.message);
     }
@@ -113,6 +131,59 @@ const getAllUsersService = async () => {
     try {
         const users = await Users.findAll(); // Lấy tất cả người dùng từ cơ sở dữ liệu
         return users;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+const getAllUserInProjectService = async (projectId) => {
+    try {
+        const projectUsers = await ProjectUser.findAll({
+            attributes: ['UserId'],
+            where: { ProjectId: projectId }
+        });
+
+        // Lấy danh sách UserId từ kết quả
+        const userIdsInProject = projectUsers.map(user => user.UserId);
+
+        // Bước 2: Lấy FullName và Id của Users có UserId trong danh sách vừa tìm được
+        const users = await Users.findAll({
+            attributes: ['Id', 'FullName'],
+            where: {
+                Id: userIdsInProject // Lọc theo danh sách UserId
+            }
+        });
+
+        return users;
+    } catch (error) {
+        throw new Error(error.message);
+    }
+};
+
+const getAllUserNotInProjectService = async (projectId) => {
+    try {
+        // Lấy tất cả UserId trong bảng ProjectUser cho ProjectId truyền vào
+        const projectUsers = await ProjectUser.findAll({
+            attributes: ['UserId'],
+            where: { ProjectId: projectId }
+        });
+
+        // Lấy danh sách UserId từ kết quả
+        const userIdsInProject = projectUsers.map(user => user.UserId);
+
+        // Bước 2: Lấy FullName và Id của Users không có trong danh sách UserId
+        const usersNotInProject = await Users.findAll({
+            attributes: ['Id', 'FullName'],
+            where: {
+                Id: {
+                    [Op.notIn]: userIdsInProject // Lọc người dùng không có trong danh sách UserId của dự án
+                }
+            }
+        });
+
+        console.log('Users not in project:', usersNotInProject);
+
+        return usersNotInProject;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -155,13 +226,15 @@ const getUserInfoByEmailService = async (email) => {
     try {
         const userEmail = await Users.findOne({
             where: {
-                Email: email
+                Email: {
+                    [Op.like]: `%${email}%` // Tìm kiếm email chứa chuỗi nhập vào
+                }
             }
-        })
+        });
         if (!userEmail) {
             throw new Error('User not found');
         }
-        return userEmail
+        return userEmail;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -252,5 +325,10 @@ module.exports = {
     getUserInfoById,
     updateUserById,
     getUserInfoByEmailService,
+
     createRoleService
+
+    getAllUserNotInProjectService,
+    getAllUserInProjectService 
+
 };

@@ -18,15 +18,9 @@ const createDaily = async (req, res) => {
 const getDailyByTimeRange = async (req, res) => {
     try {
         const user_id = req.user_id;
-        const { startDate, endDate } = req.body;
-        const dailyRecords = await dailyService.getDailyByTimeRangeService(startDate, endDate, user_id);
+        const { month, year } = req.body; // Không bắt buộc
 
-        if (Array.isArray(dailyRecords) && dailyRecords.length === 0) {
-            return res.status(500).json({
-                status: 'Error',
-                message: error.message
-            });
-        }
+        const dailyRecords = await dailyService.getDailyByTimeRangeService(month, year, user_id);
 
         return res.status(200).json({
             status: 'Success',

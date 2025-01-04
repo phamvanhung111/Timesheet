@@ -9,6 +9,6 @@ router.get('/getAllRequestType', authUserMiddleware, requestController.getAllReq
 router.put('/approvelRequest/:Id', authMiddleware, requestController.approvelRequest)
 router.put('/updateRequest/:requestId', authUserMiddleware, requestController.updateHourandType)
 router.get('/getAllRequestByProject/:ProjectId', authMiddleware, requestController.getAllRequestByProject)
-router.get('/getAllRequestByUser/:UserId', authUserMiddleware, requestController.getAllRequestByUser)
+router.post('/getAllRequestByUser', authUserMiddleware, requestController.getAllRequestByUser)
 router.get('/getAllRequestByPM', authMiddleware, requestController.getAllRequestByPM)
 module.exports = router;

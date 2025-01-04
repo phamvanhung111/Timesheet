@@ -101,6 +101,57 @@ const getAllUsers = async (req, res) => {
         });
     }
 }
+
+const getAllUserNotInProject = async (req, res) => {
+    const { Id } = req.params; // Lấy projectId từ query params
+
+    if (!Id) {
+        return res.status(400).json({
+            status: 'Err',
+            message: 'ProjectId is required',
+        });
+    }
+
+    try {
+        const users = await userService.getAllUserNotInProjectService(Id);
+        console.log('users', users);
+        return res.status(200).json({  // Sửa mã trả về là 200 khi thành công
+            status: 'Success',
+            data: users  // Trả về dữ liệu người dùng
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'Err',
+            message: error.message,
+        });
+    }
+};
+
+const getAllUserInProject = async (req, res) => {
+    const { Id } = req.params; // Lấy projectId từ query params
+
+    if (!Id) {
+        return res.status(400).json({
+            status: 'Err',
+            message: 'ProjectId is required',
+        });
+    }
+
+    try {
+        const users = await userService.getAllUserInProjectService(Id);
+        return res.status(200).json({  // Sửa mã trả về là 200 khi thành công
+            status: 'Success',
+            data: users  // Trả về dữ liệu người dùng
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'Err',
+            message: error.message,
+        });
+    }
+};
+
+
 const getAllRoles = async (req, res) => {
     try {
         const roleUser = await userService.gettAllRoleService();
@@ -203,5 +254,10 @@ module.exports = {
     getUserInfo,
     updateUser,
     getUserInfoByEmail,
+
     createRole
+
+    getAllUserNotInProject,
+    getAllUserInProject 
+
 };

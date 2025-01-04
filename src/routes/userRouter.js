@@ -11,5 +11,10 @@ router.get('/getAllRoles', authMiddleware, userController.getAllRoles);
 router.get('/getInfo/:Id', authUserMiddleware, userController.getUserInfo);
 router.put('/updateUser/:Id', authUserMiddleware, userController.updateUser);
 router.post('/getUserByEmail', authMiddleware, userController.getUserInfoByEmail);
+
 router.post('/createRole', authMiddleware, userController.createRole)
+
+router.get('/getAllUserNotInProject/:Id', authMiddleware, userController.getAllUserNotInProject);
+router.get('/getAllUserInProject/:Id', authMiddleware, userController.getAllUserInProject);
+
 module.exports = router;

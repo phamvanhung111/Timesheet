@@ -233,41 +233,33 @@ const getAllRequestByPMService = async (user_id, status) => {
 
 
 
-const getAllRequestByUserService = async (userid, role, UserId, startDate, endDate) => {
+const getAllRequestByUserService = async (user_id, month, year) => {
     try {
-        const intUserId = parseInt(UserId, 10);
-
-        // Kiểm tra quyền truy cập của user
-        if (role !== 1 && intUserId !== userid) {
-            return {
-                status: 'Err',
-                message: 'You do not have permission to view requests of other users.'
-            };
-        }
+        const intUserId = parseInt(user_id, 10);
 
         // Tạo điều kiện tìm kiếm cơ bản
         const whereCondition = {
             UserId: intUserId,
         };
 
-        // Nếu có startDate và endDate, thêm điều kiện lọc theo ngày
-        if (startDate && endDate) {
-            const formattedStartDate = moment(startDate, "YY-DD-MM").format("YYYY-MM-DD HH:mm:ss");
-            const formattedEndDate = moment(endDate, "YY-DD-MM").format("YYYY-MM-DD HH:mm:ss");
+        // Xác định ngày bắt đầu và ngày kết thúc của tháng
+        if (month && year) {
+            const startDate = moment(`${year}-${month}-01`, "YYYY-MM-DD").startOf('month').format("YYYY-MM-DD HH:mm:ss");
+            const endDate = moment(`${year}-${month}-01`, "YYYY-MM-DD").endOf('month').format("YYYY-MM-DD HH:mm:ss");
 
             whereCondition.CreatedAt = {
-                [Op.between]: [formattedStartDate, formattedEndDate],
+                [Op.between]: [startDate, endDate],
             };
         }
 
-        // Tìm tất cả các yêu cầu của user trong khoảng thời gian (nếu có) hoặc tất cả bản ghi nếu không có thời gian
+        // Tìm tất cả các yêu cầu của user trong khoảng thời gian
         const getAllRequestUser = await Request.findAll({
             where: whereCondition,
         });
 
         return getAllRequestUser;
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return {
             status: 'Err',
             message: error.message
