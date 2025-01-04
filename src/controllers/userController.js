@@ -255,9 +255,9 @@ module.exports = {
     updateUser,
     getUserInfoByEmail,
 
-    createRole
+    createRole,
 
     getAllUserNotInProject,
-    getAllUserInProject 
+    getAllUserInProject
 
 };

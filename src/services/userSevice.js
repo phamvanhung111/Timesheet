@@ -326,9 +326,9 @@ module.exports = {
     updateUserById,
     getUserInfoByEmailService,
 
-    createRoleService
+    createRoleService,
 
     getAllUserNotInProjectService,
-    getAllUserInProjectService 
+    getAllUserInProjectService
 
 };
