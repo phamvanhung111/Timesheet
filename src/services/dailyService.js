@@ -45,23 +45,64 @@ const createDailyService = async (createDaily, user_id) => {
         return { status: "Err", message: e.message };
     }
 };
-const getDailyByTimeRangeService = async (startDate, endDate, user_id) => {
+const getDailyByTimeRangeService = async (month, year, user_id) => {
     try {
+        user_id = parseInt(user_id, 10);
+        
+        // Lấy tất cả các dự án mà user làm PM
+        const projects = await Projects.findAll({
+            where: { PM: user_id },
+            attributes: ['Id', 'ProjectName']
+        });
+
+        if (!Array.isArray(projects) || projects.length === 0) {
+            throw new Error('Không tìm thấy dự án nào do bạn làm PM.');
+        }
+
+        const projectIds = projects.map(project => project.Id);
+
+        // Tạo điều kiện lọc ngày
+        let dateFilter = {};
+        if (month && year) {
+            const startDate = new Date(year, month - 1, 1);
+            const endDate = new Date(year, month, 0);
+            dateFilter = { [Op.between]: [startDate, endDate] };
+        }
+
+        // Truy vấn tất cả các Daily theo điều kiện lọc
         const dailies = await Daily.findAll({
             where: {
-                UserId: user_id,
-                Date: {
-                    [Op.between]: [startDate, endDate]
-                }
+                ProjectId: projectIds,
+                ...(month && year ? { Date: dateFilter } : {}) // Nếu có month và year thì lọc
             }
         });
-        if (!dailies) {
-            throw new Error('Lỗi1');
+
+        if (!Array.isArray(dailies) || dailies.length === 0) {
+            return [];
         }
-        return dailies;
+
+        // Lấy thông tin user từ UserId trong Daily
+        const userIds = [...new Set(dailies.map(daily => daily.UserId))];
+        const users = await Users.findAll({
+            where: { Id: userIds },
+            attributes: ['Id', 'FullName']
+        });
+
+        // Map dữ liệu
+        const dailyRecords = dailies.map(daily => {
+            const user = users.find(user => user.Id === daily.UserId);
+            const project = projects.find(project => project.Id === daily.ProjectId);
+            return {
+                ...daily.get(),
+                UserName: user ? user.FullName : 'Unknown User',
+                ProjectName: project ? project.ProjectName : 'Unknown Project'
+            };
+        });
+
+        return dailyRecords;
     } catch (error) {
-        console.log(error);
-        throw new Error('Lỗi2');
+        console.error('Error:', error);
+        throw new Error('Đã xảy ra lỗi khi xử lý dữ liệu.');
     }
 };
 const getDailyByUserService = async (user_id, Date) => {

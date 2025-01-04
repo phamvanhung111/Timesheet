@@ -129,13 +129,12 @@ const getAllRequestByPM = async (req, res) => {
 
 const getAllRequestByUser = async (req, res) => {
     try {
-        const userid = req.user_id;
-        const UserId = req.params.UserId;
-        const role = req.role;
-        const { day, month, year } = req.body;
-        console.log({ userid, role, UserId });
+        const user_id = req.user_id;
+        const { month, year } = req.body;
+        console.log(month, year)
+        console.log("okokoko")
 
-        const response = await requsetService.getAllRequestByUserService(userid, role, UserId, day, month, year)
+        const response = await requsetService.getAllRequestByUserService(user_id, month, year)
 
         return res.status(200).json({
             status: 'Success',

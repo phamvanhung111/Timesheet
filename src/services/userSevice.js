@@ -75,11 +75,6 @@ const createUserService = async (data) => {
     }
 };
 
-
-
-
-
-
 const loginUserService = async (data) => {
     try {
         const { username, password } = data;
@@ -210,13 +205,15 @@ const getUserInfoByEmailService = async (email) => {
     try {
         const userEmail = await Users.findOne({
             where: {
-                Email: email
+                Email: {
+                    [Op.like]: `%${email}%` // Tìm kiếm email chứa chuỗi nhập vào
+                }
             }
-        })
+        });
         if (!userEmail) {
             throw new Error('User not found');
         }
-        return userEmail
+        return userEmail;
     } catch (error) {
         throw new Error(error.message);
     }
