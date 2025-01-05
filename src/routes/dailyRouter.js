@@ -5,6 +5,6 @@ const { authMiddleware, authUserMiddleware } = require('../middleware/authMiddle
 
 router.post('/createDaily', authUserMiddleware, dailyController.createDaily)
 router.post('/getDailyByTimeRange', authMiddleware, dailyController.getDailyByTimeRange)
-router.get('/getDailyByUser/:projectId', authUserMiddleware, dailyController.getDailyByUser);
+router.post('/getDailyByUser', authUserMiddleware, dailyController.getDailyByUser);
 router.post('/updateDaily/:Id', authUserMiddleware, dailyController.updateDaily)
 module.exports = router;

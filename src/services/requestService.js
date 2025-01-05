@@ -248,13 +248,14 @@ const getAllRequestByUserService = async (user_id, month, year) => {
         const whereCondition = {
             UserId: intUserId,
         };
+        console.log(intUserId)
 
         // Xác định ngày bắt đầu và ngày kết thúc của tháng
         if (month && year) {
             const startDate = moment(`${year}-${month}-01`, "YYYY-MM-DD").startOf('month').format("YYYY-MM-DD HH:mm:ss");
             const endDate = moment(`${year}-${month}-01`, "YYYY-MM-DD").endOf('month').format("YYYY-MM-DD HH:mm:ss");
 
-            whereCondition.CreatedAt = {
+            whereCondition.Date = {
                 [Op.between]: [startDate, endDate],
             };
         }
@@ -263,8 +264,9 @@ const getAllRequestByUserService = async (user_id, month, year) => {
         const getAllRequestUser = await Request.findAll({
             where: whereCondition,
         });
-
+        console.log(getAllRequestUser)
         return getAllRequestUser;
+        
     } catch (error) {
         console.error(error);
         return {
