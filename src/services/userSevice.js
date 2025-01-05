@@ -104,7 +104,7 @@ const loginUserService = async (data) => {
 
         const localIp = getLocalIp();
         console.log(localIp);
-        if (localIp !== '192.168.1.29') {
+        if (localIp !== '192.168.63.102') {
             return { status: 'Err', message: 'Unauthorized IP address' };
         }
 

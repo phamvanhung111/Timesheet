@@ -2,7 +2,7 @@ const Daily = require('../models/daily');
 const Projects = require('../models/projects')
 const ProjectUser = require('../models/projectUser')
 const Users = require('../models/users')
-const { Op } = require('sequelize');
+const { Op, Sequelize  } = require('sequelize');
 const createDailyService = async (createDaily, user_id) => {
     try {
         console.log('user_id', user_id)
@@ -105,12 +105,14 @@ const getDailyByTimeRangeService = async (month, year, user_id) => {
         throw new Error('Đã xảy ra lỗi khi xử lý dữ liệu.');
     }
 };
-const getDailyByUserService = async (user_id, Date) => {
+const getDailyByUserService = async (user_id, startDate, endDate) => {
     try {
         const dailyUser = await Daily.findAll({
             where: {
                 UserId: user_id,
-                Date: Date
+                Date: {
+                    [Sequelize.Op.between]: [startDate, endDate] // Sử dụng Op.between để kiểm tra phạm vi
+                }
             }
         });
         if (!dailyUser) {

@@ -34,11 +34,12 @@ const getDailyByTimeRange = async (req, res) => {
     }
 };
 const getDailyByUser = async (req, res) => {
-    const date = req.body.date;
+    const startDate = req.body.startDate;
+    const endDate = req.body.endDate
     console.log(req.body)
     const user_id = req.user_id;
     try {
-        const dailyUser = await dailyService.getDailyByUserService(user_id, date);
+        const dailyUser = await dailyService.getDailyByUserService(user_id, startDate, endDate);
         if (Array.isArray(dailyUser) && dailyUser.length === 0) {
             return res.status(500).json({
                 status: 'Error',
