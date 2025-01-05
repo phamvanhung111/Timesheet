@@ -12,15 +12,22 @@ const Users = require('../models/users');
 const moment = require('moment')
 const createRequestService = async (data, user_id) => {
     try {
-        console.log(user_id);
         const {
             TypeId,
             Reason,
             Hours,
             Date: requestDate
         } = data;
-        if ((TypeId === 1 || TypeId === 2) && Hours > 2.00) {
-            return { status: 400, message: 'Tối đa 2 tiếng' };
+        let Hour = 10; // Use `let` to allow reassignment
+
+        if ((TypeId === 1 || TypeId === 2)) {
+            Hour = 2;
+        }
+        if ((TypeId === 3 || TypeId === 4)) {
+            Hour = 4; 
+        }
+        if (TypeId === 5) {
+            Hour = 8; 
         }
         const userProject = await ProjectUser.findOne({
             where: {
@@ -53,7 +60,7 @@ const createRequestService = async (data, user_id) => {
             CreatedAt: new Date(),
             StartAt: null,
             EndAt: null,
-            Hours,
+            Hours: Hour,
             Date: requestDate || new Date() // Use requestDate here
         });
 

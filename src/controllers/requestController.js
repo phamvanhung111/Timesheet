@@ -8,6 +8,7 @@ const createRequest = async (req, res) => {
         const response = await requsetService.createRequestService(data, user_id)
         return res.status(200).json({
             status: 'Success',
+            message: "Tạo yêu cầu thành công",
             data: response
         });
     }
