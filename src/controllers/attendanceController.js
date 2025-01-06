@@ -21,13 +21,13 @@ const createAttendanceController = async (req, res) => {
 const getAttendanceController = async (req, res) => {
     try {
         const { year, month } = req.body; // Lấy year và month từ body request
-
+        const userid = req.user_id
         // Kiểm tra nếu year và month có hợp lệ
         if (!year || !month) {
             return res.status(400).json({ message: 'Cần cung cấp year và month.' });
         }
         // Gọi service để lấy dữ liệu attendance
-        const attendances = await attendanceService.getAttendancesByMonth(year, month);
+        const attendances = await attendanceService.getAttendancesByMonth(userid, year, month);
         if (attendances.length === 0) {
             return res.status(404).json({ message: 'Không có attendance nào cho tháng này.' });
         }

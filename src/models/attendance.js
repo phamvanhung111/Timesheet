@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-
+const Request = require('./request')
 class Attendance extends Model { }
 
 Attendance.init({
@@ -63,5 +63,4 @@ Attendance.init({
     tableName: 'Attendance',
     timestamps: false
 });
-
 module.exports = Attendance;
