@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-
+const Attendance = require('./attendance')
 class Request extends Model { }
 
 Request.init({
@@ -58,8 +58,10 @@ Request.init({
     tableName: 'Request',
     timestamps: false
 });
-
-
-
-
+Request.hasMany(Attendance, {
+    foreignKey: 'RequestId',
+});
+Attendance.belongsTo(Request, {
+    foreignKey: 'RequestId',
+});
 module.exports = Request;

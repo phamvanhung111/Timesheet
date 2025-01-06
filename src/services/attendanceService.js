@@ -310,7 +310,7 @@ const createAttendance = async (attendanceData, user_id) => {
         return { status: "Err", message: error.message };
     }
 };
-const getAttendancesByMonth = async (year, month) => {
+const getAttendancesByMonth = async (userid, year, month) => {
     try {
         // Tạo ngày bắt đầu và kết thúc của tháng
         const startDate = new Date(year, month - 1, 1); // Tháng bắt đầu từ 0 trong JavaScript
@@ -319,6 +319,7 @@ const getAttendancesByMonth = async (year, month) => {
         // Tìm tất cả attendance trong tháng này
         const attendances = await Attendance.findAll({
             where: {
+                UserId: userid,
                 Date: {
                     [Op.gte]: startDate, // Tìm từ ngày bắt đầu
                     [Op.lte]: endDate // Đến ngày cuối cùng
