@@ -178,14 +178,6 @@ const createAttendance = async (attendanceData, user_id) => {
             where: { UserId: user_id, Date: attendanceDate }
         });
 
-        // const dailyRecord = await Daily.findOne({
-        //     where: { UserId: user_id, Date: Date }
-        // });
-        // if (!dailyRecord) {
-        //     return res.status(404).json({ message: 'Daily trước khi log ngày công.' });
-        // }
-
-        // Assign values or default to null if records are not found
         const checkInValue = checkInRecord ? checkInRecord.CheckIn : null;
         const checkOutValue = checkOutRecord ? checkOutRecord.CheckOut : null;
         const requestIdValue = checkRequest ? checkRequest.Id : null;
@@ -312,17 +304,16 @@ const createAttendance = async (attendanceData, user_id) => {
 };
 const getAttendancesByMonth = async (userid, year, month) => {
     try {
-        // Tạo ngày bắt đầu và kết thúc của tháng
-        const startDate = new Date(year, month - 1, 1); // Tháng bắt đầu từ 0 trong JavaScript
-        const endDate = new Date(year, month, 0); // Ngày cuối cùng của tháng
 
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
         // Tìm tất cả attendance trong tháng này
         const attendances = await Attendance.findAll({
             where: {
                 UserId: userid,
                 Date: {
-                    [Op.gte]: startDate, // Tìm từ ngày bắt đầu
-                    [Op.lte]: endDate // Đến ngày cuối cùng
+                    [Op.gte]: startDate,
+                    [Op.lte]: endDate
                 }
             }
         });

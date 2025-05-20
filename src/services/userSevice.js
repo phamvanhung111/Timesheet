@@ -8,17 +8,6 @@ const sequelize = require('../config/database')
 const { Op, where } = require('sequelize');
 const os = require('os');
 
-const getLocalIp = () => {
-    const networkInterfaces = os.networkInterfaces();
-    for (const interfaceName in networkInterfaces) {
-        for (const network of networkInterfaces[interfaceName]) {
-            if (network.family === 'IPv4' && !network.internal) {
-                return network.address;
-            }
-        }
-    }
-    return null;
-};
 
 const createUserService = async (data) => {
     const transaction = await sequelize.transaction();
@@ -100,12 +89,6 @@ const loginUserService = async (data) => {
         const isPasswordValid = await bcrypt.compare(password, account.Password);
         if (!isPasswordValid) {
             return { status: 'Err', message: 'Email or password is incorrect' };
-        }
-
-        const localIp = getLocalIp();
-        console.log(localIp);
-        if (localIp !== '192.168.63.102') {
-            return { status: 'Err', message: 'Unauthorized IP address' };
         }
 
         const user = await Users.findOne({ where: { Account: account.Id } });
